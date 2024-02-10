@@ -1,10 +1,11 @@
 import pygame as pg
+from pygame.window import Window
 
 from src import note, chart, lane
-from src.note import TapNote, DragNote
 
 pg.init()
-sc = pg.display.set_mode((1000, 600))
+window = Window("QuaTrythm", (1000, 600))
+sc = window.get_surface()
 
 note.init()
 lane.init(sc)
@@ -15,7 +16,7 @@ dt = 1
 clock = pg.Clock()
 
 while True:
-    dt = clock.tick(120) / 1000
+    dt = clock.tick() / 1000
 
     for ev in pg.event.get():
         if ev.type == pg.QUIT:
@@ -30,4 +31,4 @@ while True:
     this_chart.update(dt)
     this_chart.draw(sc)
 
-    pg.display.update()
+    window.flip()

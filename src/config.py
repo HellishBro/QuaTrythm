@@ -14,6 +14,8 @@ class Config:
         self.KEY_Lane2 = pg.K_b
         self.KEY_Lane3 = pg.K_n
 
+        self.NoteScale = 0.75
+
     @staticmethod
     def _() -> 'Config':
         if Config.INSTANCE is None:

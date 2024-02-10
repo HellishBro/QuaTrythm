@@ -3,6 +3,7 @@ import pygame as pg
 from src.lane import Lane
 from src.config import Config
 from src.note import TapNote, DragNote
+from src.functions import render_text
 
 import json5
 
@@ -16,11 +17,18 @@ def init(sc: pg.Surface):
 class Chart:
     def __init__(self, lanes: list[Lane]):
         self.lanes = lanes
+        for lane in self.lanes:
+            lane.chart = self
+
         self.note_count = sum(len(lane.notes) for lane in self.lanes)
+        self.notes_hit = 0
+        self.combo = 0
 
         self.config = Config._()
 
         self.active_lane = 0
+
+        self.combo_text = render_text("COMBO", 24, (255, 255, 255))
 
     def update(self, dt: float):
         for lane in self.lanes:
@@ -39,6 +47,9 @@ class Chart:
 
             # actual positioning logic
             sc.blit(surface, (offset_x + (WinWidth - lane.width) / 2, 0))
+
+        sc.blit(self.combo_text, (10, 10))
+        sc.blit(render_text(str(self.combo), 50, (255, 255, 255)), (10, 30))
 
     def keydown(self, ev: pg.Event):
         switches = (self.config.KEY_Lane1, self.config.KEY_Lane2, self.config.KEY_Lane3)
@@ -73,7 +84,7 @@ def parse_chart(file: str) -> Chart:
     json_lanes = json.get('lanes')
     lanes = []
     for i, lane in enumerate(json_lanes):
-        lanes.append(Lane([], i, 250))
+        lanes.append(Lane([], i, 500))
 
         for note in lane:
             cls = (TapNote, DragNote)[note[0]]

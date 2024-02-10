@@ -14,6 +14,10 @@ def init(sc: pg.Surface):
     BaseNoteWidth, BaseNoteHeight = BND
     WinWidth, WinHeight = sc.get_size()
 
+PERFECT_TIMING = 0.08
+GOOD_TIMING = 0.16
+BAD_TIMING = 0.28
+
 class Lane:
     def __init__(self, notes: list[Note], x: int, speed: float):
         self.notes = notes
@@ -31,9 +35,9 @@ class Lane:
         for note in self.notes:
             note.y = note.time * self.speed
 
-        self.score = 0
-
         self.width = BaseNoteWidth * 4
+
+        self.chart = None
 
     def update_notes(self):
         for note in self.notes:
@@ -50,29 +54,48 @@ class Lane:
             note.y -= self.speed * dt
             if note.x in self.lanes_pressed and isinstance(note, TapNote):
                 time_offset = abs(note.y / self.speed)
-                if time_offset <= 0.08:
-                    self.score += 1
-                elif time_offset <= 0.16:
-                    self.score += 0.65
+                if time_offset <= PERFECT_TIMING:
+                    self.chart.notes_hit += 1
+                    self.chart.combo += 1
+                elif time_offset <= GOOD_TIMING:
+                    self.chart.notes_hit += 0.65
+                    self.chart.combo += 1
+                elif time_offset <= BAD_TIMING:
+                    self.chart.combo = 0
+                    self.lanes_pressed.remove(note.x)
+                    pops.append(i)
+                    continue
                 else:
                     continue
 
-                pops.insert(0, i)
+                pops.append(i)
+                note.play_sound()
                 self.lanes_pressed.remove(note.x)
-            elif note.x in self.lanes_held and isinstance(note, DragNote):
-                if note.y <= 0 and abs(note.y / self.speed) < 0.16:
-                    pops.insert(0, i)
 
-        pops.reverse()
+            elif note.x in self.lanes_held and isinstance(note, DragNote):
+                if note.y <= 0 and abs(note.y / self.speed) < BAD_TIMING:
+                    self.chart.combo += 1
+                    note.play_sound()
+                    pops.append(i)
+
+            elif (note.y / self.speed) < -BAD_TIMING:
+                pops.append(i)
+                self.chart.combo = 0
+
         for i in pops:
-            self.notes[i].play_sound()
             del self.notes[i]
 
         self.lanes_pressed = []
 
     def draw(self, sc: pg.Surface):
-        for note in self.notes:
-            sc.blit(note.image, (self.note_x(note.x), self.hit_y - note.y - note.h / 2))
+        for i, note in enumerate(self.notes):
+            note_img = note.image
+            try:
+                if note.time == self.notes[i - 1].time or note.time == self.notes[i + 1].time:
+                    note_img = note.simultaneous
+            except IndexError: pass
+
+            sc.blit(note_img, (self.note_x(note.x), self.hit_y - note.y - note.h / 2))
 
     def keydown(self, ev: pg.Event):
         valid = (self.config.KEY_Note1, self.config.KEY_Note2, self.config.KEY_Note3, self.config.KEY_Note4)
