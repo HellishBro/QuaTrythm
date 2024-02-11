@@ -38,10 +38,12 @@ class Lane:
 
         self.lanes_held = []
         self.lanes_pressed = []
-        self.closest_notes = []
 
         for note in self.notes:
             note.y = note.time * self.speed - self.scroll
+
+        self.closest_notes: list[tuple[int, Note] | None] = [(None, None)] * 4
+        self.update_closest_notes()
 
         self.width = BaseNoteWidth * 4
 
@@ -55,20 +57,24 @@ class Lane:
         for note in self.notes:
             note.y = note.time * self.speed - self.scroll
 
+        self.update_closest_notes()
+
     def __repr__(self):
         return f"Lane{self.notes}"
 
     def update_closest_notes(self):
-        self.closest_notes = [None] * 4
-        note_1 = list(filter(lambda n: n.x == 0, self.notes))
-        note_2 = list(filter(lambda n: n.x == 1, self.notes))
-        note_3 = list(filter(lambda n: n.x == 2, self.notes))
-        note_4 = list(filter(lambda n: n.x == 3, self.notes))
-        self.closest_notes[0] = note_1[0]
-        self.closest_notes[1] = note_2[0]
-        self.closest_notes[2] = note_3[0]
-        self.closest_notes[3] = note_4[0]
+        self.closest_notes: list[tuple[int, Note] | None] = [(None, None)] * 4
+        for i, note in enumerate(self.notes):
+            if self.closest_notes[note.x][0] is None:
+                self.closest_notes[note.x] = (i, note)
+            else:
+                if note.time <= self.closest_notes[note.x][1].time:
+                    self.closest_notes[note.x] = (i, note)
 
+    def remove_closest_notes(self, note: Note):
+        for i, tnote in self.closest_notes:
+            if tnote == note:
+                self.closest_notes.remove((i, tnote))
 
     def update(self, dt: float):
         self.scroll += dt * self.speed
@@ -82,8 +88,11 @@ class Lane:
             if not self.incoming and note.y / self.speed <= 2:
                 self.incoming = True
 
+        for i, note in self.closest_notes:
+            if note is None: continue
+
+            time_offset = abs(note.y / self.speed)
             if note.x in self.lanes_pressed and isinstance(note, TapNote):
-                time_offset = abs(note.y / self.speed)
                 if time_offset <= PERFECT_TIMING:
                     self.chart.notes_hit += 1
                     self.note_press_effects.append([note.x, 0, 0])
@@ -100,9 +109,11 @@ class Lane:
                     self.chart.timer.set("shake_time", 0.25)
                     self.lanes_pressed.remove(note.x)
                     self.notes.remove(note)
+                    self.remove_closest_notes(note)
                     self.chart.bads += 1
                     if note.y > 0: self.chart.early += 1
                     else: self.chart.late += 1
+                    self.update_closest_notes()
                     continue
                 else:
                     continue
@@ -112,10 +123,12 @@ class Lane:
                 self.chart.accuracy_offsets.append(note.y / self.speed)
                 self.lanes_pressed.remove(note.x)
                 self.notes.remove(note)
+                self.remove_closest_notes(note)
                 self.chart.combo_text_size = 75
+                self.update_closest_notes()
 
             elif note.x in self.lanes_held and isinstance(note, DragNote):
-                if note.y <= 0 and abs(note.y / self.speed) < BAD_TIMING:
+                if note.y <= 0 and time_offset < BAD_TIMING:
                     self.chart.combo += 1
                     self.chart.notes_hit += 1
                     self.chart.perfects += 1
@@ -123,13 +136,16 @@ class Lane:
                     self.note_press_effects.append([note.x, 0, 0])
 
                     self.notes.remove(note)
+                    self.remove_closest_notes(note)
                     self.chart.combo_text_size = 75
+                    self.update_closest_notes()
 
             elif (note.y / self.speed) < -BAD_TIMING:
                 self.chart.combo = 0
                 self.chart.timer.set("shake_time", 0.25)
                 self.chart.misses += 1
                 self.notes.remove(note)
+                self.update_closest_notes()
 
         for press_effect in self.note_press_effects:
             if press_effect[2] >= 0.5:
@@ -174,6 +190,8 @@ class Lane:
             if ev.key == k:
                 self.lanes_held.append(i)
                 self.lanes_pressed.append(i)
+                self.lanes_held.sort()
+                self.lanes_pressed.sort()
 
     def keyup(self, ev: pg.Event):
         valid = (self.config.KEY_Note1, self.config.KEY_Note2, self.config.KEY_Note3, self.config.KEY_Note4)
