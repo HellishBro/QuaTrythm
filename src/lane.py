@@ -74,15 +74,22 @@ class Lane:
                 if time_offset <= PERFECT_TIMING:
                     self.chart.notes_hit += 1
                     self.note_press_effects.append([note.x, 0, 0])
+                    self.chart.perfects += 1
                 elif time_offset <= GOOD_TIMING:
                     self.chart.notes_hit += 0.65
                     self.note_press_effects.append([note.x, 1, 0])
+                    self.chart.goods += 1
+                    if note.y > 0: self.chart.early += 1
+                    else: self.chart.late += 1
                 elif time_offset <= BAD_TIMING:
                     self.chart.combo = 0
                     self.chart.accuracy_offsets.append(note.y / self.speed)
                     self.chart.timer.set("shake_time", 0.25)
                     self.lanes_pressed.remove(note.x)
                     self.notes.remove(note)
+                    self.chart.bads += 1
+                    if note.y > 0: self.chart.early += 1
+                    else: self.chart.late += 1
                     continue
                 else:
                     continue
@@ -98,6 +105,7 @@ class Lane:
                 if note.y <= 0 and abs(note.y / self.speed) < BAD_TIMING:
                     self.chart.combo += 1
                     self.chart.notes_hit += 1
+                    self.chart.perfects += 1
                     note.play_sound()
                     self.note_press_effects.append([note.x, 0, 0])
 
@@ -107,6 +115,7 @@ class Lane:
             elif (note.y / self.speed) < -BAD_TIMING:
                 self.chart.combo = 0
                 self.chart.timer.set("shake_time", 0.25)
+                self.chart.misses += 1
                 self.notes.remove(note)
 
         for press_effect in self.note_press_effects:

@@ -5,7 +5,7 @@ from src import note, chart, lane, result_screen
 
 pg.mixer.pre_init(44100, 16, 2,  1024)
 pg.init()
-window = Window("QuaTrythm", (1000, 600))
+window = Window("QuaTrythm", (1200, 720))
 sc = window.get_surface()
 
 note.init()

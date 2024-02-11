@@ -126,7 +126,7 @@ def init(sc: pg.Surface):
 class ResultScreen:
     def __init__(self, chart: Chart):
         self.chart = chart
-        pg.mixer.music.fadeout(5000)
+        pg.mixer.music.fadeout(10000)
 
         self.rank = Ranks.F
         if self.chart.score >= 600_000:
@@ -171,7 +171,10 @@ class ResultScreen:
         self.combo_x = 10
 
         self.average_error_text = render_text("Average Error:", 30, (255, 255, 255))
-        average_error = sum(self.chart.accuracy_offsets) / len(self.chart.accuracy_offsets)
+        if len(self.chart.accuracy_offsets) > 0:
+            average_error = sum(self.chart.accuracy_offsets) / len(self.chart.accuracy_offsets)
+        else:
+            average_error = 0
         self.average_error = render_text(f"{round(average_error * 1000)}ms", 25, (255, 255, 255))
         self.error_x = 110
 
@@ -206,6 +209,23 @@ class ResultScreen:
 
         sc.blit(self.average_error_text, (self.error_x, WinHeight // 4 * 2))
         sc.blit(self.average_error, (self.error_x, WinHeight // 4 * 2 + self.average_error_text.get_height() + 5))
+
+        summary_perfect = render_text(f"Perfect: {self.chart.perfects:,}", 24, (255, 255, 0))
+        summary_good = render_text(f"Good: {self.chart.goods:,}", 24, (0, 125, 255))
+        summary_bad = render_text(f"Bad: {self.chart.bads:,}", 24, (255, 255, 255))
+        summary_early = render_text(f"Early: {self.chart.early:,}", 24, (0, 255, 255))
+        summary_late = render_text(f"Late: {self.chart.late:,}", 24, (0, 125, 125))
+
+        y = 25
+        sc.blit(summary_perfect, (WinWidth - summary_perfect.get_width() - 25, y))
+        y += summary_perfect.get_height() + 10
+        sc.blit(summary_good, (WinWidth - summary_good.get_width() - 25, y))
+        y += summary_good.get_height() + 10
+        sc.blit(summary_bad, (WinWidth - summary_bad.get_width() - 25, y))
+        y += summary_bad.get_height() + 10
+        sc.blit(summary_early, (WinWidth - summary_early.get_width() - 25, y))
+        y += summary_early.get_height() + 10
+        sc.blit(summary_late, (WinWidth - summary_late.get_width() - 25, y))
 
     def keyup(self, ev: pg.Event):
         pass

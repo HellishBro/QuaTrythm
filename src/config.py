@@ -14,12 +14,12 @@ class Config:
         self.KEY_Lane2 = pg.K_b
         self.KEY_Lane3 = pg.K_n
 
-        self.NoteScale = 0.75
+        self.NoteScale = 1
 
-        self.VOLUME_Music = 0.5
+        self.VOLUME_Music = 1
         self.VOLUME_Sound = 1
 
-        self.BGDim = 125
+        self.BGDim = 255
 
     @staticmethod
     def _() -> 'Config':

@@ -27,6 +27,12 @@ class Chart:
         self.note_count = sum(len(lane.notes) for lane in self.lanes)
         self.notes_hit = 0
         self.combo = 0
+        self.goods = 0
+        self.perfects = 0
+        self.bads = 0
+        self.misses = 0
+        self.early = 0
+        self.late = 0
         self.max_combo = 0
         self.accuracy_offsets = []
 
