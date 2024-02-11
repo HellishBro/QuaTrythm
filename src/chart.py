@@ -40,6 +40,7 @@ class Chart:
 
         self.active_lane = 0
         self.timer = Timer()
+        self.total_time = max([max([note.time for note in lane.notes] if lane.notes else [0]) for lane in self.lanes])
 
         self.combo_text = render_text("COMBO", 24, (255, 255, 255))
         self.combo_text_size = 50
@@ -66,8 +67,11 @@ class Chart:
         self.background = pg.transform.smoothscale_by(self.background, scale)
         self.background.set_alpha(Config._().BGDim)
 
+        self.time = -2
+
     def update(self, dt: float):
         self.timer.tick(dt)
+        self.time += dt
 
         for lane in self.lanes:
             lane.update(dt)
@@ -97,7 +101,8 @@ class Chart:
         offset = (self.curr_lane.x - 1) * (self.curr_lane.width / 2) + (WinWidth - self.curr_lane.width) / 2
         for i in range(4):
             sc.blit((self.notes_even_bg, self.notes_odd_bg)[i % 2], (offset + i * self.curr_lane.width / 4, 0))
-        pg.draw.line(sc, (255, 255, 255), (0, self.curr_lane.hit_y), (WinWidth, self.curr_lane.hit_y))
+        pg.draw.line(sc, (255, 255, 255), (0, self.curr_lane.hit_y), (WinWidth, self.curr_lane.hit_y), 5)
+        pg.draw.line(sc, (0, 255, 255), (0, self.curr_lane.hit_y), (self.time / self.total_time * WinWidth, self.curr_lane.hit_y), 5)
 
         for lane in self.lanes:
             offset_x = (lane.x - self.curr_lane.x) * lane.width + (self.curr_lane.x - 1) * (self.curr_lane.width / 2)
@@ -117,6 +122,12 @@ class Chart:
 
         sc.blit(self.name_text, (10, WinHeight - self.name_text.get_height() - 10))
         sc.blit(self.difficulty_text, (WinWidth - self.difficulty_text.get_width() - 10, WinHeight - self.difficulty_text.get_height() - 10))
+
+        if self.timer.have("result_sleep"):
+            alpha = self.timer.get("result_sleep") / 2 * 255
+            sc.set_alpha(alpha)
+        elif self.show_result_screen:
+            sc.set_alpha(255)
 
     def keydown(self, ev: pg.Event):
         switches = (self.config.KEY_Lane1, self.config.KEY_Lane2, self.config.KEY_Lane3)

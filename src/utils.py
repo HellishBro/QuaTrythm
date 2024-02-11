@@ -38,3 +38,6 @@ class Timer:
             del self.timers[name]
         except KeyError:
             pass
+
+    def get(self, name):
+        return self.timers.get(name, 0)

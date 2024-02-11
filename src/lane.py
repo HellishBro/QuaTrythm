@@ -19,7 +19,7 @@ def init(sc: pg.Surface):
     BaseNoteWidth, BaseNoteHeight = BND
     WinWidth, WinHeight = sc.get_size()
     NoteHitEffect = gradient((0, 125, 125, 0), (255, 255, 0, 125), 0, (BaseNoteWidth, BaseNoteWidth * 2), pg.SRCALPHA)
-    IncomingGradient = gradient((150, 150, 150, 255), (0, 0, 0, 0), 0, (BaseNoteWidth * 4, BaseNoteWidth * 2), pg.SRCALPHA)
+    IncomingGradient = gradient((255, 255, 255, 255), (0, 0, 0, 0), 0, (BaseNoteWidth * 4, BaseNoteWidth * 2), pg.SRCALPHA)
 
 PERFECT_TIMING = 0.05
 GOOD_TIMING = 0.1
@@ -38,6 +38,7 @@ class Lane:
 
         self.lanes_held = []
         self.lanes_pressed = []
+        self.closest_notes = []
 
         for note in self.notes:
             note.y = note.time * self.speed - self.scroll
@@ -56,6 +57,18 @@ class Lane:
 
     def __repr__(self):
         return f"Lane{self.notes}"
+
+    def update_closest_notes(self):
+        self.closest_notes = [None] * 4
+        note_1 = list(filter(lambda n: n.x == 0, self.notes))
+        note_2 = list(filter(lambda n: n.x == 1, self.notes))
+        note_3 = list(filter(lambda n: n.x == 2, self.notes))
+        note_4 = list(filter(lambda n: n.x == 3, self.notes))
+        self.closest_notes[0] = note_1[0]
+        self.closest_notes[1] = note_2[0]
+        self.closest_notes[2] = note_3[0]
+        self.closest_notes[3] = note_4[0]
+
 
     def update(self, dt: float):
         self.scroll += dt * self.speed
