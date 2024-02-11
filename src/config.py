@@ -16,6 +16,11 @@ class Config:
 
         self.NoteScale = 0.75
 
+        self.VOLUME_Music = 0.5
+        self.VOLUME_Sound = 1
+
+        self.BGDim = 125
+
     @staticmethod
     def _() -> 'Config':
         if Config.INSTANCE is None:
@@ -38,3 +43,12 @@ class Config:
 
         for key, value in json.items():
             cls.set(key, value)
+
+    def to_file(self, config_file: str):
+        attrs = {}
+        for k, v in self.__dict__.items():
+            if not (k.startswith('__') or callable(getattr(self, k))):
+                attrs[k] = v
+
+        with open(config_file, "w+") as file:
+            file.write(json5.dumps(attrs))

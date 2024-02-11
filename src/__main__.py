@@ -1,16 +1,19 @@
 import pygame as pg
 from pygame.window import Window
 
-from src import note, chart, lane
+from src import note, chart, lane, result_screen
 
+pg.mixer.pre_init(44100, 16, 2,  1024)
 pg.init()
 window = Window("QuaTrythm", (1000, 600))
 sc = window.get_surface()
 
 note.init()
+result_screen.init(sc)
 lane.init(sc)
-chart.init(sc)
-this_chart = chart.parse_chart(r"C:\Users\helli\PycharmProjects\QuaTrythm\src\charts\test.json5")
+chart.init(sc, window)
+
+current_scene = chart.parse_chart(r"C:\Users\helli\PycharmProjects\QuaTrythm\src\charts\test.json5")
 
 dt = 1
 clock = pg.Clock()
@@ -22,13 +25,16 @@ while True:
         if ev.type == pg.QUIT:
             exit()
         elif ev.type == pg.KEYDOWN:
-            this_chart.keydown(ev)
+            current_scene.keydown(ev)
         elif ev.type == pg.KEYUP:
-            this_chart.keyup(ev)
+            current_scene.keyup(ev)
 
     sc.fill((0, 0, 0))
 
-    this_chart.update(dt)
-    this_chart.draw(sc)
+    current_scene.update(dt)
+    current_scene.draw(sc)
+
+    if isinstance(current_scene, chart.Chart) and current_scene.show_result_screen:
+        current_scene = result_screen.ResultScreen(current_scene)
 
     window.flip()
