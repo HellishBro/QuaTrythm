@@ -2,8 +2,8 @@ import pygame as pg
 
 from src.config import Config
 from src.note import Note, TapNote, DragNote
-
 from src.utils import gradient
+from src.base_scene import Scene
 
 BaseNoteWidth: int = 0
 BaseNoteHeight: int = 0
@@ -25,7 +25,7 @@ PERFECT_TIMING = 0.05
 GOOD_TIMING = 0.1
 BAD_TIMING = 0.2
 
-class Lane:
+class Lane(Scene):
     def __init__(self, notes: list[Note], x: int, speed: float):
         self.notes = notes
 

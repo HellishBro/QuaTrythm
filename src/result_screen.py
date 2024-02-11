@@ -1,8 +1,8 @@
 import pygame as pg
 
 from src.chart import Chart
-from src.lane import Lane
 from src.utils import gradient, render_text
+from src.base_scene import Scene
 
 from enum import Enum, auto
 from random import choice
@@ -86,15 +86,15 @@ remarks = {
 }
 
 rank_colors = {
-    Ranks.F: (50, 50, 50, 125),
-    Ranks.D: (100, 100, 100, 125),
-    Ranks.C: (125, 125, 125, 125),
-    Ranks.B: (150, 150, 150, 125),
-    Ranks.A: (125, 255, 125, 125),
-    Ranks.S: (50, 255, 10, 125),
-    Ranks.V: (0, 255, 125, 125),
-    Ranks.FC: (0, 255, 255, 125),
-    Ranks.AP: (255, 255, 0, 125)
+    Ranks.F: (50, 50, 50, 100),
+    Ranks.D: (100, 100, 100, 100),
+    Ranks.C: (125, 125, 125, 100),
+    Ranks.B: (150, 150, 150, 100),
+    Ranks.A: (125, 255, 125, 100),
+    Ranks.S: (50, 255, 10, 100),
+    Ranks.V: (0, 255, 125, 100),
+    Ranks.FC: (0, 255, 255, 100),
+    Ranks.AP: (255, 255, 0, 100)
 }
 
 ImgF: pg.Surface = None
@@ -123,7 +123,7 @@ def init(sc: pg.Surface):
 
     WinWidth, WinHeight = sc.get_size()
 
-class ResultScreen:
+class ResultScreen(Scene):
     def __init__(self, chart: Chart):
         self.chart = chart
         pg.mixer.music.fadeout(10000)
@@ -166,17 +166,15 @@ class ResultScreen:
         remark = choice(remarks[self.rank])
         self.remark_text = render_text(remark, 30, (255, 255, 255), WinWidth // 4 * 3)
 
-        self.max_combo_text = render_text("Max Combo:", 30, (255, 255, 255))
-        self.max_combo = render_text(f"{self.chart.max_combo:,}", 25, (255, 255, 255))
-        self.combo_x = 10
+        self.max_combo_text = render_text("Max Combo:", 24, (255, 255, 255))
+        self.max_combo = render_text(f"{self.chart.max_combo:,}", 24, (255, 255, 255))
 
-        self.average_error_text = render_text("Average Error:", 30, (255, 255, 255))
+        self.average_error_text = render_text("Average Error:", 24, (255, 255, 255))
         if len(self.chart.accuracy_offsets) > 0:
             average_error = sum(self.chart.accuracy_offsets) / len(self.chart.accuracy_offsets)
         else:
             average_error = 0
-        self.average_error = render_text(f"{round(average_error * 1000)}ms", 25, (255, 255, 255))
-        self.error_x = 110
+        self.average_error = render_text(f"{round(average_error * 1000)}ms", 24, (255, 255, 255))
 
         self.time = 0
 
@@ -190,8 +188,6 @@ class ResultScreen:
 
     def update(self, dt: float):
         self.time += dt
-        self.combo_x = math.fabs(math.cos(self.time * math.pi)) * 100 + 10
-        self.error_x = math.fabs(math.sin(self.time * math.pi)) * 100 + 10
         self.bg_alpha = 230 * self.l(self.time, 5) + 12.5 * (1 - math.cos(2 * math.pi * self.time))
 
     def draw(self, sc: pg.Surface):
@@ -199,22 +195,21 @@ class ResultScreen:
 
         self.bg.set_alpha(self.bg_alpha)
         sc.blit(self.bg, (0, 0))
+        sc.blit(pg.transform.rotate(self.bg, 180), (0, 0))
 
         sc.blit(self.rank_img, ((WinWidth - self.rank_img.get_width()) / 2, (WinHeight - self.rank_img.get_height()) / 2))
         sc.blit(self.score_text, ((WinWidth - self.score_text.get_width()) / 2, (WinHeight - self.rank_img.get_height()) / 2 - self.score_text.get_height() - 25))
         sc.blit(self.remark_text, ((WinWidth - self.remark_text.get_width()) / 2, (WinHeight / 2) + self.rank_img.get_height() / 2 + 25))
 
-        sc.blit(self.max_combo_text, (self.combo_x, WinHeight // 4))
-        sc.blit(self.max_combo, (self.combo_x, WinHeight // 4 + self.max_combo_text.get_height() + 5))
-
-        sc.blit(self.average_error_text, (self.error_x, WinHeight // 4 * 2))
-        sc.blit(self.average_error, (self.error_x, WinHeight // 4 * 2 + self.average_error_text.get_height() + 5))
+        sc.blit(self.chart.name_text, (10, WinHeight - self.chart.name_text.get_height() - 10))
+        sc.blit(self.chart.difficulty_text, (WinWidth - self.chart.difficulty_text.get_width() - 10, WinHeight - self.chart.difficulty_text.get_height() - 10))
 
         summary_perfect = render_text(f"Perfect: {self.chart.perfects:,}", 24, (255, 255, 0))
         summary_good = render_text(f"Good: {self.chart.goods:,}", 24, (0, 125, 255))
         summary_bad = render_text(f"Bad: {self.chart.bads:,}", 24, (255, 255, 255))
+        summary_miss = render_text(f"Miss: {self.chart.misses:,}", 24, (200, 200, 200))
         summary_early = render_text(f"Early: {self.chart.early:,}", 24, (0, 255, 255))
-        summary_late = render_text(f"Late: {self.chart.late:,}", 24, (0, 125, 125))
+        summary_late = render_text(f"Late: {self.chart.late:,}", 24, (0, 200, 200))
 
         y = 25
         sc.blit(summary_perfect, (WinWidth - summary_perfect.get_width() - 25, y))
@@ -226,9 +221,14 @@ class ResultScreen:
         sc.blit(summary_early, (WinWidth - summary_early.get_width() - 25, y))
         y += summary_early.get_height() + 10
         sc.blit(summary_late, (WinWidth - summary_late.get_width() - 25, y))
+        y += summary_late.get_height() + 25
+        sc.blit(summary_miss, (WinWidth - summary_miss.get_width() - 25, y))
+        y += summary_miss.get_height() + 25
+        sc.blit(self.max_combo_text, (WinWidth - self.max_combo_text.get_width() - 25, y))
+        y += self.max_combo_text.get_height() + 5
+        sc.blit(self.max_combo, (WinWidth - self.max_combo.get_width() - 25, y))
+        y += self.max_combo.get_height() + 10
+        sc.blit(self.average_error_text, (WinWidth - self.average_error_text.get_width() - 25, y))
+        y += self.average_error_text.get_height() + 5
+        sc.blit(self.average_error, (WinWidth - self.average_error.get_width() - 25, y))
 
-    def keyup(self, ev: pg.Event):
-        pass
-
-    def keydown(self, ev: pg.Event):
-        pass

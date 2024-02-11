@@ -4,6 +4,7 @@ from src.lane import Lane
 from src.config import Config
 from src.note import TapNote, DragNote
 from src.utils import render_text, gradient, Timer
+from src.base_scene import Scene
 
 import json5
 import os
@@ -18,7 +19,7 @@ def init(sc: pg.Surface, window: pg.Window):
     WinWidth, WinHeight = sc.get_size()
     Window = window
 
-class Chart:
+class Chart(Scene):
     def __init__(self, lanes: list[Lane], song: str, name: str, difficulty: str, bg_img: str):
         self.lanes = lanes
         for lane in self.lanes:
