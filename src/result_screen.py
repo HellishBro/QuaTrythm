@@ -221,7 +221,7 @@ class ResultScreen(Scene):
         sc.blit(summary_early, (WinWidth - summary_early.get_width() - 25, y))
         y += summary_early.get_height() + 10
         sc.blit(summary_late, (WinWidth - summary_late.get_width() - 25, y))
-        y += summary_late.get_height() + 25
+        y += summary_late.get_height() + 10
         sc.blit(summary_miss, (WinWidth - summary_miss.get_width() - 25, y))
         y += summary_miss.get_height() + 25
         sc.blit(self.max_combo_text, (WinWidth - self.max_combo_text.get_width() - 25, y))

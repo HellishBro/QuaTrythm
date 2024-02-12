@@ -12,3 +12,6 @@ class Scene:
 
     def keyup(self, ev: pg.Event):
         pass
+
+    def event(self, ev: pg.Event) -> bool:
+        pass
