@@ -9,8 +9,8 @@ def gradient(start_color, end_color, angle, size, flags = 0) -> pg.Surface:
     surf = pg.Surface((1, 2), flags)
     surf.fill(start_color)
     surf.set_at((0, 1), end_color)
-    surf = pg.transform.smoothscale(surf, size)
     surf = pg.transform.rotate(surf, angle)
+    surf = pg.transform.smoothscale(surf, size)
     return surf
 
 def ease_sine(start, end, percentage) -> float:
