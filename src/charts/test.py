@@ -1,7 +1,7 @@
 import json5
 import random
 
-dict = {"lanes": [[], [], []], "song": "test.mp3", "name": "Creo - Dimensions", "difficulty": "5.6", "bpm": 115, "mode": "beat", "background": "test.jpg"}
+dict = {"lanes": [[], [], []], "song": "test.mp3", "name": "Creo - Dimensions", "difficulty": "5.6", "bpm": 115, "background": "test.jpg"}
 
 t = 0
 for x in [random.randint(0, 2) for _ in range(15)]:

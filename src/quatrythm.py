@@ -3,9 +3,15 @@ import pygame as pg
 from src.base_scene import Scene
 from src.chart import Chart, parse_chart
 from src.result_screen import ResultScreen
+from src.song_select import SongSelect
+
 from src.config import Config
 from src.utils import Timer, render_text, gradient
-from src import note, chart, lane, result_screen
+from src.user import User
+
+from src import note, chart, lane, result_screen, song_select
+
+from threading import Thread
 
 class QuaTrythm(Scene):
     "The whole entire game in a class because why not"
@@ -16,14 +22,26 @@ class QuaTrythm(Scene):
         note.init()
         result_screen.init(self.sc)
         lane.init(self.sc)
+        song_select.init(self.sc)
+
         chart.init(self.sc, self.window)
 
         self.active_chart: Chart = None
+        self.chart_loaded = False
+        self.loaded_song_id = 0
 
         self.current_scene: Scene = None
+        self.current_scene = SongSelect()
 
         self.timer = Timer()
         self.volume_gradient: pg.Surface = None
+
+        User.load()
+
+    def load_chart(self, song_select_scene: SongSelect):
+        chart = parse_chart("charts/" + song_select_scene.current_song.chart)
+        self.active_chart = chart
+        self.chart_loaded = True
 
     def update(self, dt: float):
         self.timer.tick(dt)
@@ -31,7 +49,18 @@ class QuaTrythm(Scene):
 
         if self.active_chart and self.active_chart.show_result_screen:
             self.current_scene = ResultScreen(self.active_chart)
+            User._().set_score(self.loaded_song_id, self.active_chart.score)
+            if self.active_chart.combo == self.active_chart.note_count:
+                User._().set_fc(self.loaded_song_id)
+            User._().save()
             self.active_chart = None
+
+        if isinstance(self.current_scene, SongSelect):
+            if self.current_scene.begin_load_chart:
+                self.load_chart(self.current_scene)
+            if self.current_scene.done and self.chart_loaded:
+                self.loaded_song_id = self.current_scene.current_song.id
+                self.current_scene = self.active_chart
 
     def draw(self, sc: pg.Surface):
         self.current_scene.draw(sc)

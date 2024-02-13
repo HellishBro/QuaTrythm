@@ -163,7 +163,6 @@ def parse_chart(file: str) -> Chart:
     json_lanes = json.get('lanes')
     lanes = []
     bpm = json.get('bpm', 0)
-    mode = json.get('mode', 'time')
 
     for i, lane in enumerate(json_lanes):
         lanes.append(Lane([], i, 600))
@@ -171,10 +170,7 @@ def parse_chart(file: str) -> Chart:
         for note in lane:
             cls = (TapNote, DragNote)[note[0]]
             x = note[1]
-            if mode == "time":
-                time = note[2]
-            else:
-                time = 60 / bpm * note[2]
+            time = 60 / bpm * note[2]
 
             lanes[-1].notes.append(cls(x, time))
 

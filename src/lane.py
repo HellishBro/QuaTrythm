@@ -5,6 +5,8 @@ from src.note import Note, TapNote, DragNote
 from src.utils import gradient
 from src.base_scene import Scene
 
+from src.constants import *
+
 BaseNoteWidth: int = 0
 BaseNoteHeight: int = 0
 WinWidth: int = 0
@@ -20,10 +22,6 @@ def init(sc: pg.Surface):
     WinWidth, WinHeight = sc.get_size()
     NoteHitEffect = gradient((0, 125, 125, 0), (255, 255, 0, 125), 0, (BaseNoteWidth, BaseNoteWidth * 2), pg.SRCALPHA)
     IncomingGradient = gradient((255, 255, 255, 255), (0, 0, 0, 0), 0, (BaseNoteWidth * 4, BaseNoteWidth * 2), pg.SRCALPHA)
-
-PERFECT_TIMING = 0.05
-GOOD_TIMING = 0.1
-BAD_TIMING = 0.2
 
 class Lane(Scene):
     def __init__(self, notes: list[Note], x: int, speed: float):

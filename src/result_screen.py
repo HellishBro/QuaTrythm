@@ -1,23 +1,14 @@
 import pygame as pg
 
 from src.chart import Chart
-from src.utils import gradient, render_text
+from src.utils import gradient, render_text, rank_image
 from src.base_scene import Scene
 
-from enum import Enum, auto
+from src.user import User
+from src.constants import *
+
 from random import choice
 import math
-
-class Ranks(Enum):
-    AP = auto()
-    FC = auto()
-    V = auto()
-    S = auto()
-    A = auto()
-    B = auto()
-    C = auto()
-    D = auto()
-    F = auto()
 
 # endscreen remarks
 remarks = {
@@ -85,41 +76,10 @@ remarks = {
     ]
 }
 
-rank_colors = {
-    Ranks.F: (50, 50, 50, 100),
-    Ranks.D: (100, 100, 100, 100),
-    Ranks.C: (125, 125, 125, 100),
-    Ranks.B: (150, 150, 150, 100),
-    Ranks.A: (125, 255, 125, 100),
-    Ranks.S: (50, 255, 10, 100),
-    Ranks.V: (0, 255, 125, 100),
-    Ranks.FC: (0, 255, 255, 100),
-    Ranks.AP: (255, 255, 0, 100)
-}
-
-ImgF: pg.Surface = None
-ImgD: pg.Surface = None
-ImgC: pg.Surface = None
-ImgB: pg.Surface = None
-ImgA: pg.Surface = None
-ImgS: pg.Surface = None
-ImgV: pg.Surface = None
-ImgFC: pg.Surface = None
-ImgAP: pg.Surface = None
-
 WinWidth, WinHeight = (0, 0)
 
 def init(sc: pg.Surface):
-    global ImgF, ImgD, ImgC, ImgB, ImgA, ImgS, ImgV, ImgFC, ImgAP, WinWidth, WinHeight
-    ImgF = pg.image.load("assets/grade/f.png").convert_alpha()
-    ImgD = pg.image.load("assets/grade/d.png").convert_alpha()
-    ImgC = pg.image.load("assets/grade/c.png").convert_alpha()
-    ImgB = pg.image.load("assets/grade/b.png").convert_alpha()
-    ImgA = pg.image.load("assets/grade/a.png").convert_alpha()
-    ImgV = pg.image.load("assets/grade/v.png").convert_alpha()
-    ImgS = pg.image.load("assets/grade/s.png").convert_alpha()
-    ImgFC = pg.image.load("assets/grade/fc.png").convert_alpha()
-    ImgAP = pg.image.load("assets/grade/ap.png").convert_alpha()
+    global WinWidth, WinHeight
 
     WinWidth, WinHeight = sc.get_size()
 
@@ -128,39 +88,10 @@ class ResultScreen(Scene):
         self.chart = chart
         pg.mixer.music.fadeout(10000)
 
-        self.rank = Ranks.F
-        if self.chart.score >= 600_000:
-            self.rank = Ranks.D
-        if self.chart.score >= 700_000:
-            self.rank = Ranks.C
-        if self.chart.score >= 820_000:
-            self.rank = Ranks.B
-        if self.chart.score >= 880_000:
-            self.rank = Ranks.A
-        if self.chart.score >= 920_000:
-            self.rank = Ranks.S
-        if self.chart.score >= 960_000:
-            self.rank = Ranks.V
-        if self.chart.combo == self.chart.note_count:
-            self.rank = Ranks.FC
-        if self.chart.score == 1_000_000:
-            self.rank = Ranks.AP
-
-        self.rank_img: pg.Surface = None
-        match self.rank:
-            case Ranks.F: self.rank_img = ImgF
-            case Ranks.D: self.rank_img = ImgD
-            case Ranks.C: self.rank_img = ImgC
-            case Ranks.B: self.rank_img = ImgB
-            case Ranks.A: self.rank_img = ImgA
-            case Ranks.S: self.rank_img = ImgS
-            case Ranks.V: self.rank_img = ImgV
-            case Ranks.FC: self.rank_img = ImgFC
-            case Ranks.AP: self.rank_img = ImgAP
-
+        self.rank, self.rank_img = rank_image(self.chart.score, self.chart.combo == self.chart.note_count)
         self.rank_img = pg.transform.scale_by(self.rank_img, 0.75)
 
-        self.bg = gradient((0, 0, 0, 0), rank_colors[self.rank], 0, (WinWidth, WinHeight), pg.SRCALPHA)
+        self.bg = gradient((0, 0, 0, 0), RANK_COLORS[self.rank], 0, (WinWidth, WinHeight), pg.SRCALPHA)
 
         self.score_text = render_text(f"{self.chart.score:,}", 50, (255, 255, 255))
         remark = choice(remarks[self.rank])
@@ -177,7 +108,6 @@ class ResultScreen(Scene):
         self.average_error = render_text(f"{round(average_error * 1000)}ms", 24, (255, 255, 255))
 
         self.time = 0
-
         self.bg_alpha = 0
 
     @staticmethod
