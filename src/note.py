@@ -43,6 +43,7 @@ class Note:
         return f"{self.__class__.__name__}:{self.x}@{self.time}"
 
     def play_sound(self):
+        self.sound.set_volume(Config._().VOLUME_Sound)
         self.sound.play()
 
 class TapNote(Note):

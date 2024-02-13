@@ -1,17 +1,22 @@
 import pygame as pg
 
 from src.base_scene import Scene
-from src.utils import render_text, gradient, Timer, rank_image
+from src.utils import render_text, gradient, Timer, rank_image, play_sound
 from src.user import User
 
 from src.constants import *
 
 import json5
+import math
 
 WinWidth, WinHeight = (0, 0)
-def init(sc: pg.Surface):
-    global WinWidth, WinHeight
+Window: pg.Window = None
+DefaultWindowX, DefaultWindowY = (0, 0)
+def init(sc: pg.Surface, window: pg.Window):
+    global WinWidth, WinHeight, Window, DefaultWindowX, DefaultWindowY
     WinWidth, WinHeight = sc.get_size()
+    Window = window
+    DefaultWindowX, DefaultWindowY = Window.position
 
 class Song:
     def __init__(self, name, chart, artist, charter, highlight, id):
@@ -51,6 +56,7 @@ class SongSelect(Scene):
         self.selected_song_gradient = gradient((200, 200, 200, 255), (0, 0, 0, 0), 90, (self.song_list_width, self.song_list_height))
         self.user = User._()
         self.timer = Timer()
+        self.timer.set("keydown_cooldown", 1)
 
         self.change_music = True
         self.song_banner: pg.Surface = None
@@ -61,12 +67,15 @@ class SongSelect(Scene):
         self.done = False
         self.begin_load_chart = False
 
+        self.song_play_time = 0
+
     @property
     def current_song(self):
         return self.songs[self.selected_chart]
 
     def update(self, dt: float):
         self.timer.tick(dt)
+        self.song_play_time += dt
 
         if self.change_music:
             pg.mixer.music.fadeout(500)
@@ -83,17 +92,23 @@ class SongSelect(Scene):
             self.current_song_score_image = pg.transform.scale_by(self.current_song_score_image, 0.25)
             self.current_song_score_gradient = gradient((0, 0, 0, 0), RANK_COLORS[rank], 90, (WinWidth / 2, WinHeight), pg.SRCALPHA)
 
+            self.song_play_time = 0
+
         if self.timer.have("song_play") and self.timer.is_done("song_play"):
             pg.mixer.music.load("charts/" + self.current_song.song)
             pg.mixer.music.play()
             pg.mixer.music.rewind()
             pg.mixer.music.set_pos(self.current_song.highlight_start)
+
+            self.song_play_time = 0
             self.timer.set("rewind", self.current_song.highlight_end - self.current_song.highlight_start)
             self.timer.delete("song_play")
 
         if self.timer.is_done("rewind") and not self.timer.have("song_play"):
             pg.mixer.music.rewind()
             pg.mixer.music.set_pos(self.current_song.highlight_start)
+
+            self.song_play_time = 0
             self.timer.set("rewind", self.current_song.highlight_end - self.current_song.highlight_start)
 
         if self.timer.have("enter") and self.timer.is_done("enter"):
@@ -120,6 +135,10 @@ class SongSelect(Scene):
             sc.blit(song_text, (25, offset + song_text.get_height() / 2))
 
         banner_x, banner_y = WinWidth / 5 * 3, (WinHeight - self.song_banner.get_height()) / 5 * 2
+        banner_x += (abs(math.sin(math.pi * self.song_play_time * (self.current_song.bpm / 60))) - 1) * 50
+
+        Window.position = (DefaultWindowX - (abs(math.sin(math.pi * self.song_play_time * (self.current_song.bpm / 60))) - 1) * 50, DefaultWindowY)
+
         sc.blit(self.song_banner, (banner_x, banner_y))
 
         charter_text = render_text("Charter: " + self.current_song.charter, 24, (255, 255, 255))
@@ -134,19 +153,20 @@ class SongSelect(Scene):
         sc.blit(render_text(self.current_song.difficulty, 30, (255, 255, 255)), (banner_x + 5, banner_y + 5))
 
     def keydown(self, ev: pg.Event):
-        if ev.key == pg.K_DOWN:
-            self.selected_chart += 1
-            self.selected_chart %= len(self.songs)
-            self.change_music = True
-            pg.mixer.Sound("assets/click.wav").play()
-        elif ev.key == pg.K_UP:
-            self.selected_chart -= 1
-            self.selected_chart %= len(self.songs)
-            self.change_music = True
-            pg.mixer.Sound("assets/click.wav").play()
+        if self.timer.is_done("keydown_cooldown"):
+            if ev.key in (pg.K_DOWN, pg.K_RIGHT):
+                self.selected_chart += 1
+                self.selected_chart %= len(self.songs)
+                self.change_music = True
+                play_sound("assets/click.wav")
+            elif ev.key in (pg.K_UP, pg.K_LEFT):
+                self.selected_chart -= 1
+                self.selected_chart %= len(self.songs)
+                self.change_music = True
+                play_sound("assets/click.wav")
 
-        elif ev.key in (pg.K_SPACE, pg.K_RETURN):
-            pg.mixer.Sound("assets/enter.wav").play()
-            pg.mixer.music.fadeout(1000)
-            self.timer.set("enter", 1)
-            self.begin_load_chart = True
+            elif ev.key in (pg.K_SPACE, pg.K_RETURN):
+                play_sound("assets/enter.wav")
+                pg.mixer.music.fadeout(1000)
+                self.timer.set("enter", 1)
+                self.begin_load_chart = True

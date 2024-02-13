@@ -2,6 +2,7 @@ import pygame as pg
 import math
 
 from src.constants import *
+from src.config import Config
 
 def render_text(text, size, color, warp_length = 0) -> pg.Surface:
     return pg.font.Font("assets/roboto.ttf", size).render(text, True, color, None, warp_length)
@@ -95,3 +96,8 @@ def rank_image(score, fc=False):
             rank_img = ImgAP
 
     return rank, rank_img
+
+def play_sound(sound: str):
+    snd = pg.mixer.Sound(sound)
+    snd.set_volume(Config._().VOLUME_Sound)
+    snd.play()

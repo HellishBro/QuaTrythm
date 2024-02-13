@@ -4,7 +4,7 @@ from src.chart import Chart
 from src.utils import gradient, render_text, rank_image
 from src.base_scene import Scene
 
-from src.user import User
+from src.utils import play_sound, Timer
 from src.constants import *
 
 from random import choice
@@ -110,6 +110,11 @@ class ResultScreen(Scene):
         self.time = 0
         self.bg_alpha = 0
 
+        self.done = False
+
+        self.timer = Timer()
+        self.timer.set("keydown_cooldown", 1)
+
     @staticmethod
     def l(x, a):
         if x > a: return 1
@@ -117,6 +122,7 @@ class ResultScreen(Scene):
             return (-math.cos(x * math.pi / a) + 1) / 2
 
     def update(self, dt: float):
+        self.timer.tick(dt)
         self.time += dt
         self.bg_alpha = 230 * self.l(self.time, 5) + 12.5 * (1 - math.cos(2 * math.pi * self.time))
 
@@ -162,3 +168,8 @@ class ResultScreen(Scene):
         y += self.average_error_text.get_height() + 5
         sc.blit(self.average_error, (WinWidth - self.average_error.get_width() - 25, y))
 
+    def keydown(self, ev: pg.Event):
+        if self.timer.is_done("keydown_cooldown"):
+            if ev.key in (pg.K_SPACE, pg.K_RETURN):
+                play_sound("assets/enter.wav")
+                self.done = True

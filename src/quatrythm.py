@@ -22,7 +22,7 @@ class QuaTrythm(Scene):
         note.init()
         result_screen.init(self.sc)
         lane.init(self.sc)
-        song_select.init(self.sc)
+        song_select.init(self.sc, self.window)
 
         chart.init(self.sc, self.window)
 
@@ -35,6 +35,7 @@ class QuaTrythm(Scene):
 
         self.timer = Timer()
         self.volume_gradient: pg.Surface = None
+        self.volume_change_type = 0 # 0 music, 1 sfx
 
         User.load()
 
@@ -62,6 +63,11 @@ class QuaTrythm(Scene):
                 self.loaded_song_id = self.current_scene.current_song.id
                 self.current_scene = self.active_chart
 
+        if isinstance(self.current_scene, ResultScreen):
+            if self.current_scene.done:
+                self.current_scene = SongSelect()
+                self.current_scene.update(dt)
+
     def draw(self, sc: pg.Surface):
         self.current_scene.draw(sc)
 
@@ -70,7 +76,7 @@ class QuaTrythm(Scene):
                 self.timer.delete("volume_fade")
             else:
                 alpha = min(self.timer.get("volume_fade") * 255, 255)
-                volume_text = render_text("Music Volume", 30, (255, 255, 255))
+                volume_text = render_text("Music Volume" if self.volume_change_type == 0 else "Sound Volume", 30, (255, 255, 255))
                 bar = pg.Surface((self.sc.get_width() / 2, 10), pg.SRCALPHA)
                 bar.fill((0, 0, 0))
                 bar.blit(self.volume_gradient, (0, 0))
@@ -88,15 +94,25 @@ class QuaTrythm(Scene):
         self.current_scene.keyup(ev)
 
     def event(self, ev: pg.Event) -> bool:
+        keys = pg.key.get_pressed()
+
         scene_ev_parse = self.current_scene.event(ev)
         if scene_ev_parse: return scene_ev_parse
 
         if ev.type == pg.MOUSEWHEEL:
             multiplier = 0.1
-            if pg.key.get_pressed()[pg.K_LSHIFT]:
+            if keys[pg.K_LSHIFT]:
                 multiplier = 0.05
 
-            Config._().VOLUME_Music = max(0, min(1, Config._().VOLUME_Music + ev.y * multiplier))
-            pg.mixer.music.set_volume(Config._().VOLUME_Music)
+            if keys[pg.K_LCTRL]:
+                volume = max(0, min(1, Config._().VOLUME_Sound + ev.y * multiplier))
+                Config._().VOLUME_Sound = volume
+                self.volume_change_type = 1
+            else:
+                volume = max(0, min(1, Config._().VOLUME_Music + ev.y * multiplier))
+                Config._().VOLUME_Music = volume
+                pg.mixer.music.set_volume(volume)
+                self.volume_change_type = 0
+
             self.timer.set("volume_fade", 1.5)
-            self.volume_gradient = gradient((200, 200, 200, 255), (125, 125, 125, 150), 90, (Config._().VOLUME_Music * (self.sc.get_width() / 2), 10))
+            self.volume_gradient = gradient((200, 200, 200, 255), (125, 125, 125, 150), 90, (volume * (self.sc.get_width() / 2), 10))
