@@ -1,7 +1,7 @@
 import json5
 import random
 
-dict = {"lanes": [[], [], []], "song": "test.mp3", "name": "Creo - Dimensions", "difficulty": "5.6", "bpm": 115, "background": "test.jpg"}
+dict = {"lanes": [[], [], []], "song": "song.mp3", "name": "Creo - Dimensions", "difficulty": "5.6", "bpm": 115, "background": "thumbnail.jpg"}
 
 t = 0
 for x in [random.randint(0, 2) for _ in range(15)]:
@@ -18,5 +18,5 @@ for x in [random.randint(0, 2) for _ in range(15)]:
         t += 0.25 * random.randint(1, 4)
     t += 1
 
-with open("test.json5", "w+") as f:
+with open("Dimensions/chart.json5", "w+") as f:
     f.write(json5.dumps(dict))

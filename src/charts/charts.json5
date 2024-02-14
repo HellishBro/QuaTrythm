@@ -2,15 +2,15 @@
   charts: [
     {
       name: "Futile Resistance",
-      chart: "Futile Resistance Test.json5",
+      directory: "Futile Resistance",
       artist: "Dokuson Amane",
       charter: "HellishBro",
       song_highlight: [36, 54],
       id: 0
     },
     {
-      name: "Dimension",
-      chart: "test.json5",
+      name: "Dimensions",
+      directory: "Dimensions",
       artist: "Creo",
       charter: "HellishBro",
       song_highlight: [50, 66.6],

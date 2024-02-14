@@ -42,7 +42,7 @@ class QuaTrythm(Scene):
         pg.mixer.music.set_volume(Config._().VOLUME_Music)
 
     def load_chart(self, song_select_scene: SongSelect):
-        chart = parse_chart("charts/" + song_select_scene.current_song.chart)
+        chart = parse_chart(song_select_scene.current_song.chart_path)
         self.active_chart = chart
         self.chart_loaded = True
 

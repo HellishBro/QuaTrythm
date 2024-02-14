@@ -8,6 +8,7 @@ from src.constants import *
 
 import json5
 import math
+from pathlib import Path
 
 WinWidth, WinHeight = (0, 0)
 Window: pg.Window = None
@@ -19,26 +20,28 @@ def init(sc: pg.Surface, window: pg.Window):
     DefaultWindowX, DefaultWindowY = Window.position
 
 class Song:
-    def __init__(self, name, chart, artist, charter, highlight, id):
+    def __init__(self, name, directory, artist, charter, highlight, id):
         self.name = name
-        self.chart = chart
+        self.directory = directory
         self.artist = artist
         self.charter = charter
         self.id = id
 
         self.highlight_start, self.highlight_end = highlight
 
-        with open("charts/" + self.chart) as f:
+        self.path = Path("charts") / self.directory
+        self.chart_path = self.path / "chart.json5"
+        with open(self.chart_path) as f:
             chart_info = json5.loads(f.read())
 
-        self.song = chart_info["song"]
+        self.song = self.path / "song.mp3"
+        self.background = self.path / "thumbnail.jpg"
         self.difficulty = chart_info["difficulty"]
-        self.background = chart_info["background"]
         self.bpm = chart_info["bpm"]
 
     @classmethod
     def from_json(cls, json: dict):
-        return cls(json["name"], json["chart"], json["artist"], json["charter"], json["song_highlight"], json["id"])
+        return cls(json["name"], json["directory"], json["artist"], json["charter"], json["song_highlight"], json["id"])
 
 class SongSelect(Scene):
     def __init__(self):
@@ -81,7 +84,7 @@ class SongSelect(Scene):
             pg.mixer.music.fadeout(500)
             self.timer.set("song_play", 0.5)
             self.change_music = False
-            self.song_banner = pg.image.load("charts/" + self.current_song.background).convert_alpha()
+            self.song_banner = pg.image.load(self.current_song.background).convert_alpha()
 
             sw, sh = (WinWidth / 2) / self.song_banner.get_width(), (WinHeight / 2) / self.song_banner.get_height()
             scale = min(sw, sh)
@@ -95,7 +98,7 @@ class SongSelect(Scene):
             self.song_play_time = 0
 
         if self.timer.have("song_play") and self.timer.is_done("song_play"):
-            pg.mixer.music.load("charts/" + self.current_song.song)
+            pg.mixer.music.load(self.current_song.song)
             pg.mixer.music.play()
             pg.mixer.music.rewind()
             pg.mixer.music.set_pos(self.current_song.highlight_start)

@@ -8,6 +8,7 @@ from src.base_scene import Scene
 
 import json5
 import os
+from pathlib import Path
 import random
 
 WinWidth: int = 0
@@ -176,4 +177,5 @@ def parse_chart(file: str) -> Chart:
 
         lanes[-1].update_notes()
 
-    return Chart(lanes, os.path.join(os.path.dirname(file), json.get("song")), json.get('name'), json.get('difficulty'), os.path.join(os.path.dirname(file), json.get("background")))
+    directory_path = Path(os.path.dirname(file))
+    return Chart(lanes, directory_path / "song.mp3" , json.get('name'), json.get('difficulty'), directory_path / "thumbnail.jpg")
