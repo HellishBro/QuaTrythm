@@ -1,3 +1,5 @@
+import os.path
+
 import pygame as pg
 
 from src.base_scene import Scene
@@ -10,8 +12,6 @@ from src.utils import Timer, render_text, gradient
 from src.user import User
 
 from src import note, chart, lane, result_screen, song_select
-
-from threading import Thread
 
 class QuaTrythm(Scene):
     "The whole entire game in a class because why not"
@@ -38,6 +38,8 @@ class QuaTrythm(Scene):
         self.volume_change_type = 0 # 0 music, 1 sfx
 
         User.load()
+        Config.load()
+        pg.mixer.music.set_volume(Config._().VOLUME_Music)
 
     def load_chart(self, song_select_scene: SongSelect):
         chart = parse_chart("charts/" + song_select_scene.current_song.chart)
@@ -94,6 +96,11 @@ class QuaTrythm(Scene):
         self.current_scene.keyup(ev)
 
     def event(self, ev: pg.Event) -> bool:
+        if ev.type == pg.QUIT:
+            User._().save()
+            Config._().save()
+            quit()
+
         keys = pg.key.get_pressed()
 
         scene_ev_parse = self.current_scene.event(ev)

@@ -1,3 +1,5 @@
+import os.path
+
 import pygame as pg
 
 import json5
@@ -37,18 +39,21 @@ class Config:
         return getattr(Config._(), key)
 
     @classmethod
-    def from_file(cls, config_file: str):
-        with open(config_file) as file:
-            json = json5.loads(file.read())
+    def load(cls):
+        if os.path.exists("user/config.json5"):
+            with open("user/config.json5") as file:
+                json = json5.loads(file.read())
 
-        for key, value in json.items():
-            cls.set(key, value)
+            for key, value in json.items():
+                Config._().set(key, value)
 
-    def to_file(self, config_file: str):
+        return Config._()
+
+    def save(self):
         attrs = {}
         for k, v in self.__dict__.items():
             if not (k.startswith('__') or callable(getattr(self, k))):
                 attrs[k] = v
 
-        with open(config_file, "w+") as file:
+        with open("user/config.json5", "w+") as file:
             file.write(json5.dumps(attrs))

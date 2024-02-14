@@ -2,7 +2,6 @@ import pygame as pg
 from pygame.window import Window
 
 from src.quatrythm import QuaTrythm
-from src.chart import parse_chart
 
 pg.init()
 desktop_size = pg.display.get_desktop_sizes()[0]
@@ -18,9 +17,7 @@ while True:
     dt = clock.tick() / 1000
 
     for ev in pg.event.get():
-        if ev.type == pg.QUIT:
-            exit()
-        elif ev.type == pg.KEYDOWN:
+        if ev.type == pg.KEYDOWN:
             game.keydown(ev)
         elif ev.type == pg.KEYUP:
             game.keyup(ev)
