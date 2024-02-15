@@ -1,11 +1,10 @@
-import os.path
-
 import pygame as pg
 
 from src.base_scene import Scene
 from src.chart import Chart, parse_chart
 from src.result_screen import ResultScreen
 from src.song_select import SongSelect
+from src.chart_load import ChartLoading
 
 from src.config import Config
 from src.utils import Timer, render_text, gradient
@@ -37,41 +36,65 @@ class QuaTrythm(Scene):
         self.volume_gradient: pg.Surface = None
         self.volume_change_type = 0 # 0 music, 1 sfx
 
+        self.black = pg.Surface(self.sc.get_size(), pg.SRCALPHA)
+        self.black.fill((0, 0, 0))
+
         User.load()
         Config.load()
         pg.mixer.music.set_volume(Config._().VOLUME_Music)
 
     def load_chart(self, song_select_scene: SongSelect):
-        chart = parse_chart(song_select_scene.current_song.chart_path)
-        self.active_chart = chart
-        self.chart_loaded = True
+        self.current_scene = ChartLoading(song_select_scene.current_song.chart_path)
+        self.current_scene.update(0)
 
     def update(self, dt: float):
         self.timer.tick(dt)
         self.current_scene.update(dt)
 
-        if self.active_chart and self.active_chart.show_result_screen:
-            self.current_scene = ResultScreen(self.active_chart)
-            User._().set_score(self.loaded_song_id, self.active_chart.score)
-            if self.active_chart.combo == self.active_chart.note_count:
-                User._().set_fc(self.loaded_song_id)
-            User._().save()
-            self.active_chart = None
+        if isinstance(self.current_scene, ChartLoading):
+            if self.current_scene.cooldown is None:
+                self.active_chart = self.current_scene.parsed_chart
+                self.current_scene = self.active_chart
+
+        if isinstance(self.active_chart, Chart):
+            if self.active_chart.show_result_screen:
+                self.current_scene = ResultScreen(self.active_chart)
+                User._().set_score(self.loaded_song_id, self.active_chart.score)
+                if self.active_chart.combo == self.active_chart.note_count:
+                    User._().set_fc(self.loaded_song_id)
+                User._().save()
+                self.active_chart = None
+            elif self.active_chart.quit and not self.timer.have("quit"):
+                self.timer.set("quit", 1)
+                self.timer.set("fade", 1)
+                pg.mixer.music.fadeout(1000)
 
         if isinstance(self.current_scene, SongSelect):
             if self.current_scene.begin_load_chart:
-                self.load_chart(self.current_scene)
-            if self.current_scene.done and self.chart_loaded:
+                self.current_scene.begin_load_chart = False
                 self.loaded_song_id = self.current_scene.current_song.id
-                self.current_scene = self.active_chart
+                self.load_chart(self.current_scene)
 
         if isinstance(self.current_scene, ResultScreen):
             if self.current_scene.done:
                 self.current_scene = SongSelect()
                 self.current_scene.update(dt)
 
+        if self.timer.have("quit") and self.timer.is_done("quit"):
+            self.current_scene = SongSelect()
+            self.current_scene.update(dt)
+            self.active_chart = None
+            self.timer.delete("quit")
+
+        if self.timer.is_done("fade"):
+            self.timer.delete("fade")
+
     def draw(self, sc: pg.Surface):
         self.current_scene.draw(sc)
+
+        if self.timer.have("fade") and not self.timer.is_done("fade"):
+            self.black.set_alpha((1 - self.timer.get("fade")) * 255)
+            sc.blit(self.black, (0, 0))
 
         if self.timer.have("volume_fade"):
             if self.timer.is_done("volume_fade"):

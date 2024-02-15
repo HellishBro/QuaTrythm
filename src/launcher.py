@@ -19,4 +19,5 @@ while error == 0xC0000005:
         pass
 
     error = subproc.returncode
-    print("Error 0xC0000005 returned. Restarting...")
+    if error == 0xC0000005:
+        print("Error 0xC0000005 returned. Restarting...")

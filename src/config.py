@@ -21,7 +21,7 @@ class Config:
         self.VOLUME_Music = 1
         self.VOLUME_Sound = 1
 
-        self.BGDim = 255
+        self.BGDim = 125
 
     @staticmethod
     def _() -> 'Config':

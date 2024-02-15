@@ -1,6 +1,7 @@
 import pygame as pg
 
 from src.base_scene import Scene
+from src.config import Config
 from src.utils import render_text, gradient, Timer, rank_image, play_sound
 from src.user import User
 
@@ -56,13 +57,14 @@ class SongSelect(Scene):
         self.song_list_height = 100
         self.song_list_width = WinWidth / 3
 
-        self.selected_song_gradient = gradient((200, 200, 200, 255), (0, 0, 0, 0), 90, (self.song_list_width, self.song_list_height))
+        self.selected_song_gradient = gradient((200, 200, 200, 255), (0, 0, 0, 0), 90, (self.song_list_width, self.song_list_height), pg.SRCALPHA)
         self.user = User._()
         self.timer = Timer()
         self.timer.set("keydown_cooldown", 1)
 
         self.change_music = True
         self.song_banner: pg.Surface = None
+        self.song_dim_bg: pg.Surface = None
         self.current_song_score = 0
         self.current_song_score_image: pg.Surface = None
         self.current_song_score_gradient: pg.Surface = None
@@ -88,7 +90,14 @@ class SongSelect(Scene):
 
             sw, sh = (WinWidth / 2) / self.song_banner.get_width(), (WinHeight / 2) / self.song_banner.get_height()
             scale = min(sw, sh)
-            self.song_banner = pg.transform.scale_by(self.song_banner, scale)
+            song_banner = pg.transform.scale_by(self.song_banner, scale)
+
+            sw, sh = WinWidth / self.song_banner.get_width(), WinHeight / self.song_banner.get_height()
+            scale = min(sw, sh)
+            self.song_dim_bg = pg.transform.scale_by(self.song_banner, scale)
+            self.song_dim_bg.set_alpha(min(Config._().BGDim, 100))
+
+            self.song_banner = song_banner
 
             self.current_song_score = User._().get_score(self.current_song.id)
             rank, self.current_song_score_image = rank_image(self.current_song_score, User._().get_fc(self.current_song.id))
@@ -119,6 +128,8 @@ class SongSelect(Scene):
             self.done = True
 
     def draw(self, sc: pg.Surface):
+        sc.blit(self.song_dim_bg, ((WinWidth - self.song_dim_bg.get_width()) / 2, (WinHeight - self.song_dim_bg.get_height()) / 2))
+
         sc.blit(self.current_song_score_gradient, (WinWidth / 2, 0))
         sc.blit(pg.transform.rotate(self.current_song_score_gradient, 180), (0, 0))
 

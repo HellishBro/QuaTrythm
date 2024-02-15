@@ -61,6 +61,7 @@ class Chart(Scene):
         self.score = 0
 
         self.show_result_screen = False
+        self.quit = False
 
         self.background = pg.image.load(bg_img).convert_alpha()
         sw, sh = WinWidth / self.background.get_width(), WinHeight / self.background.get_height()
@@ -141,6 +142,9 @@ class Chart(Scene):
                     self.curr_lane.lanes_pressed = []
                     self.curr_lane = i
                     self.curr_lane.lanes_held = old_held
+
+        elif ev.key == pg.K_ESCAPE:
+            self.quit = True
 
         else:
             self.curr_lane.keydown(ev)
