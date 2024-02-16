@@ -1,9 +1,9 @@
 import pygame as pg
 
-from src.utils import render_text
-from src.chart import parse_chart, Chart
+from utils import render_text
+from chart import parse_chart, Chart
 
-from src.base_scene import Scene
+from base_scene import Scene
 
 class ChartLoading(Scene):
     def __init__(self, chart_file: str):

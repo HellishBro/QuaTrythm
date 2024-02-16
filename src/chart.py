@@ -1,10 +1,10 @@
 import pygame as pg
 
-from src.lane import Lane
-from src.config import Config
-from src.note import TapNote, DragNote
-from src.utils import render_text, gradient, Timer, play_sound
-from src.base_scene import Scene
+from lane import Lane
+from config import Config
+from note import TapNote, DragNote
+from utils import render_text, gradient, Timer, play_sound, path
+from base_scene import Scene
 
 import json5
 import os
@@ -65,11 +65,11 @@ class Chart(Scene):
         self.pause = False
         self.restart = False
 
-        self.unpause_button = pg.transform.scale_by(pg.image.load("assets/continue.png").convert_alpha(), 0.75)
+        self.unpause_button = pg.transform.scale_by(pg.image.load(path("assets/", "continue.png")).convert_alpha(), 0.75)
         self.unpause_button_x = (WinWidth - self.unpause_button.get_width()) / 2
-        self.quit_button = pg.image.load("assets/quit.png").convert_alpha()
+        self.quit_button = pg.image.load(path("assets/", "quit.png")).convert_alpha()
         self.quit_button_x = self.unpause_button_x - self.quit_button.get_width() - 50
-        self.restart_button = pg.image.load("assets/restart.png").convert_alpha()
+        self.restart_button = pg.image.load(path("assets/", "restart.png")).convert_alpha()
         self.restart_button_x = self.unpause_button_x + self.unpause_button.get_width() + 50
 
         self.pause_menu_selection = 1

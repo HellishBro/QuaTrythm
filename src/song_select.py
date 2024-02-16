@@ -1,11 +1,11 @@
 import pygame as pg
 
-from src.base_scene import Scene
-from src.config import Config
-from src.utils import render_text, gradient, Timer, rank_image, play_sound
-from src.user import User
+from base_scene import Scene
+from config import Config
+from utils import render_text, gradient, Timer, rank_image, play_sound, path
+from user import User
 
-from src.constants import *
+from constants import *
 
 import json5
 import math
@@ -30,7 +30,7 @@ class Song:
 
         self.highlight_start, self.highlight_end = highlight
 
-        self.path = Path("charts") / self.directory
+        self.path = path("charts/", self.directory)
         self.chart_path = self.path / "chart.json5"
         with open(self.chart_path) as f:
             chart_info = json5.loads(f.read())
@@ -46,7 +46,7 @@ class Song:
 
 class SongSelect(Scene):
     def __init__(self):
-        with open("charts/charts.json5") as f:
+        with open(path("charts/", "charts.json5")) as f:
             data = json5.loads(f.read())
 
         self.songs: list[Song] = []

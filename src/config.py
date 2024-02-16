@@ -1,8 +1,15 @@
-import os.path
-
 import pygame as pg
 
+import os
 import json5
+import sys
+from pathlib import Path
+
+def path(*path) -> Path:
+    if getattr(sys, 'frozen', False):
+        return Path(os.path.join(os.path.dirname(sys.executable), *path))
+    else:
+        return Path(os.path.join(sys.argv[0], *path))
 
 class Config:
     INSTANCE: 'Config' = None
@@ -40,8 +47,8 @@ class Config:
 
     @classmethod
     def load(cls):
-        if os.path.exists("user/config.json5"):
-            with open("user/config.json5") as file:
+        if os.path.exists(path("user/", "config.json5")):
+            with open(path("user/", "config.json5")) as file:
                 json = json5.loads(file.read())
 
             for key, value in json.items():
@@ -55,5 +62,5 @@ class Config:
             if not (k.startswith('__') or callable(getattr(self, k))):
                 attrs[k] = v
 
-        with open("user/config.json5", "w+") as file:
+        with open(path("user/", "config.json5"), "w+") as file:
             file.write(json5.dumps(attrs))

@@ -2,3 +2,5 @@
 .idea/
 tests/
 src/user/
+/build_temp/
+/build/user

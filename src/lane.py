@@ -1,11 +1,11 @@
 import pygame as pg
 
-from src.config import Config
-from src.note import Note, TapNote, DragNote
-from src.utils import gradient
-from src.base_scene import Scene
+from config import Config
+from note import Note, TapNote, DragNote
+from utils import gradient
+from base_scene import Scene
 
-from src.constants import *
+from constants import *
 
 BaseNoteWidth: int = 0
 BaseNoteHeight: int = 0
@@ -17,7 +17,7 @@ IncomingGradient: pg.Surface = None
 
 def init(sc: pg.Surface):
     global BaseNoteWidth, BaseNoteHeight, WinWidth, WinHeight, NoteHitEffect, IncomingGradient
-    from src.note import BaseNoteDimensions as BND
+    from note import BaseNoteDimensions as BND
     BaseNoteWidth, BaseNoteHeight = BND
     WinWidth, WinHeight = sc.get_size()
     NoteHitEffect = gradient((0, 125, 125, 0), (255, 255, 0, 125), 0, (BaseNoteWidth, BaseNoteWidth * 2), pg.SRCALPHA)

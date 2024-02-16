@@ -1,17 +1,24 @@
 import pygame as pg
 
-from src.base_scene import Scene
-from src.chart import Chart, parse_chart
-from src.result_screen import ResultScreen
-from src.song_select import SongSelect
-from src.chart_load import ChartLoading
-from src.main_menu import MainMenu
+from base_scene import Scene
+from chart import Chart, parse_chart
+from result_screen import ResultScreen
+from song_select import SongSelect
+from chart_load import ChartLoading
+from main_menu import MainMenu
 
-from src.config import Config
-from src.utils import Timer, render_text, gradient
-from src.user import User
+from config import Config
+from utils import Timer, render_text, gradient
+from user import User
 
-from src import note, chart, lane, result_screen, song_select, main_menu
+import note
+import chart
+import lane
+import result_screen
+import song_select
+import main_menu
+import sys
+
 
 class QuaTrythm(Scene):
     "The whole entire game in a class because why not"
@@ -143,7 +150,7 @@ class QuaTrythm(Scene):
         if ev.type == pg.QUIT:
             User._().save()
             Config._().save()
-            quit()
+            sys.exit()
 
         keys = pg.key.get_pressed()
 

@@ -1,6 +1,10 @@
 import json5
 import os
 
+from utils import path
+import base64
+import gzip
+
 class User:
     INSTANCE: 'User' = None
 
@@ -40,20 +44,20 @@ class User:
         return User.INSTANCE
 
     def save(self):
-        if not os.path.exists("user"):
-            os.mkdir("user")
-        with open("user/save.json5", "w+") as f:
-            f.write(json5.dumps(self.json))
+        if not os.path.exists(path("user")):
+            os.mkdir(path("user"))
+        with open(path("user/", "save.json5"), "w+") as f:
+            f.write(base64.b64encode(gzip.compress(json5.dumps(self.json).encode())).decode())
 
     @classmethod
     def load(cls):
-        if not os.path.exists("user/save.json5"):
+        if not os.path.exists(path("user/", "save.json5")):
             User.INSTANCE = User()
 
         else:
             clazz = User()
-            with open("user/save.json5") as f:
-                data = json5.loads(f.read())
+            with open(path("user/", "save.json5")) as f:
+                data = json5.loads(gzip.decompress(base64.b64decode(f.read().encode())).decode())
 
             clears: dict = data["clears"]
             for id, score in clears.items():

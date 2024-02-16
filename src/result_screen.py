@@ -1,11 +1,11 @@
 import pygame as pg
 
-from src.chart import Chart
-from src.utils import gradient, render_text, rank_image
-from src.base_scene import Scene
+from chart import Chart
+from utils import gradient, render_text, rank_image
+from base_scene import Scene
 
-from src.utils import play_sound, Timer
-from src.constants import *
+from utils import play_sound, Timer
+from constants import *
 
 from random import choice
 import math

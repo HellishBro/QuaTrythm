@@ -1,6 +1,7 @@
 import pygame as pg
 
-from src.config import Config
+from config import Config
+from utils import path
 
 TapNoteImg: pg.Surface = None
 DragNoteImg: pg.Surface = None
@@ -15,16 +16,16 @@ BaseNoteDimensions = (0, 0)
 
 def init():
     global TapNoteImg, DragNoteImg, TapNoteSimulImg, DragNoteSimulImg, TapNoteSnd, DragNoteSnd, BaseNoteDimensions
-    TapNoteImg = pg.transform.scale_by(pg.image.load("assets/tap.png").convert_alpha(), Config._().NoteScale)
-    DragNoteImg = pg.transform.scale_by(pg.image.load("assets/drag.png").convert_alpha(), Config._().NoteScale)
+    TapNoteImg = pg.transform.scale_by(pg.image.load(path("assets/tap.png")).convert_alpha(), Config._().NoteScale)
+    DragNoteImg = pg.transform.scale_by(pg.image.load(path("assets/drag.png")).convert_alpha(), Config._().NoteScale)
 
-    TapNoteSimulImg = pg.transform.scale_by(pg.image.load("assets/tap-simul.png").convert_alpha(), Config._().NoteScale)
-    DragNoteSimulImg = pg.transform.scale_by(pg.image.load("assets/drag-simul.png").convert_alpha(), Config._().NoteScale)
+    TapNoteSimulImg = pg.transform.scale_by(pg.image.load(path("assets/tap-simul.png")).convert_alpha(), Config._().NoteScale)
+    DragNoteSimulImg = pg.transform.scale_by(pg.image.load(path("assets/drag-simul.png")).convert_alpha(), Config._().NoteScale)
 
     BaseNoteDimensions = TapNoteImg.get_size()
 
-    TapNoteSnd = pg.mixer.Sound("assets/tap.wav")
-    DragNoteSnd = pg.mixer.Sound("assets/drag.wav")
+    TapNoteSnd = pg.mixer.Sound(path("assets/tap.wav"))
+    DragNoteSnd = pg.mixer.Sound(path("assets/drag.wav"))
 
 class Note:
     def __init__(self, x: int, time: float, image: pg.Surface, sound: pg.mixer.Sound):

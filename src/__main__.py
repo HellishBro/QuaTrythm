@@ -1,7 +1,7 @@
 import pygame as pg
 from pygame.window import Window
 
-from src.quatrythm import QuaTrythm
+from quatrythm import QuaTrythm
 
 pg.init()
 desktop_size = pg.display.get_desktop_sizes()[0]

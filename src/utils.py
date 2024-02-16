@@ -1,13 +1,20 @@
 import pygame as pg
-import math
 
-from src.constants import *
-from src.config import Config
+from constants import *
+from config import Config
 
 from pathlib import Path
+import os
+import sys
+
+def path(*path) -> Path:
+    if getattr(sys, 'frozen', False):
+        return Path(os.path.join(os.path.dirname(sys.executable), *path))
+    else:
+        return Path(os.path.join(os.path.dirname(sys.argv[0]), *path))
 
 def render_text(text, size, color, warp_length = 0) -> pg.Surface:
-    return pg.font.Font("assets/roboto.ttf", size).render(text, True, color, None, warp_length)
+    return pg.font.Font(path("assets/roboto.ttf"), size).render(text, True, color, None, warp_length)
 
 def gradient(start_color, end_color, angle, size, flags = 0) -> pg.Surface:
     "Very expensive operation"
@@ -45,15 +52,15 @@ class Timer:
         return self.timers.get(name, 0)
 
 def rank_image(score, fc=False):
-    ImgF = pg.image.load("assets/grade/f.png").convert_alpha()
-    ImgD = pg.image.load("assets/grade/d.png").convert_alpha()
-    ImgC = pg.image.load("assets/grade/c.png").convert_alpha()
-    ImgB = pg.image.load("assets/grade/b.png").convert_alpha()
-    ImgA = pg.image.load("assets/grade/a.png").convert_alpha()
-    ImgV = pg.image.load("assets/grade/v.png").convert_alpha()
-    ImgS = pg.image.load("assets/grade/s.png").convert_alpha()
-    ImgFC = pg.image.load("assets/grade/fc.png").convert_alpha()
-    ImgAP = pg.image.load("assets/grade/ap.png").convert_alpha()
+    ImgF = pg.image.load(path("assets/grade/f.png")).convert_alpha()
+    ImgD = pg.image.load(path("assets/grade/d.png")).convert_alpha()
+    ImgC = pg.image.load(path("assets/grade/c.png")).convert_alpha()
+    ImgB = pg.image.load(path("assets/grade/b.png")).convert_alpha()
+    ImgA = pg.image.load(path("assets/grade/a.png")).convert_alpha()
+    ImgV = pg.image.load(path("assets/grade/v.png")).convert_alpha()
+    ImgS = pg.image.load(path("assets/grade/s.png")).convert_alpha()
+    ImgFC = pg.image.load(path("assets/grade/fc.png")).convert_alpha()
+    ImgAP = pg.image.load(path("assets/grade/ap.png")).convert_alpha()
 
     rank = Ranks.F
     if score >= 600_000:
@@ -97,6 +104,6 @@ def rank_image(score, fc=False):
     return rank, rank_img
 
 def play_sound(sound: Path):
-    snd = pg.mixer.Sound(sound)
+    snd = pg.mixer.Sound(path(sound))
     snd.set_volume(Config._().VOLUME_Sound)
     snd.play()

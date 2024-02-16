@@ -1,0 +1,20 @@
+{
+  charts: [
+    {
+      name: "Futile Resistance",
+      directory: "Futile Resistance",
+      artist: "Dokuson Amane",
+      charter: "HellishBro",
+      song_highlight: [36, 54],
+      id: 0
+    },
+    {
+      name: "Dimensions",
+      directory: "Dimensions",
+      artist: "Creo",
+      charter: "HellishBro",
+      song_highlight: [50, 66.6],
+      id: 1
+    }
+  ]
+}
