@@ -1,2 +1,3 @@
 pygame-ce
 json5
+auto-py-to-exe
