@@ -28,6 +28,7 @@ class QuaTrythm(Scene):
         self.active_chart: Chart = None
         self.chart_loaded = False
         self.loaded_song_id = 0
+        self.loaded_song_path: str = None
 
         self.current_scene: Scene = None
         self.current_scene = SongSelect()
@@ -68,11 +69,16 @@ class QuaTrythm(Scene):
                 self.timer.set("quit", 1)
                 self.timer.set("fade", 1)
                 pg.mixer.music.fadeout(1000)
+            elif self.active_chart.restart and not self.timer.have("restart"):
+                self.timer.set("restart", 1)
+                self.timer.set("fade", 1)
+                pg.mixer.music.fadeout(1000)
 
         if isinstance(self.current_scene, SongSelect):
             if self.current_scene.begin_load_chart:
                 self.current_scene.begin_load_chart = False
                 self.loaded_song_id = self.current_scene.current_song.id
+                self.loaded_song_path = self.current_scene.current_song.chart_path
                 self.load_chart(self.current_scene)
 
         if isinstance(self.current_scene, ResultScreen):
@@ -85,6 +91,12 @@ class QuaTrythm(Scene):
             self.current_scene.update(dt)
             self.active_chart = None
             self.timer.delete("quit")
+
+        if self.timer.have("restart") and self.timer.is_done("restart"):
+            self.active_chart = None
+            self.current_scene = ChartLoading(self.loaded_song_path)
+            self.current_scene.update(0)
+            self.timer.delete("restart")
 
         if self.timer.is_done("fade"):
             self.timer.delete("fade")

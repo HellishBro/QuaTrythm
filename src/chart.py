@@ -3,7 +3,7 @@ import pygame as pg
 from src.lane import Lane
 from src.config import Config
 from src.note import TapNote, DragNote
-from src.utils import render_text, gradient, Timer
+from src.utils import render_text, gradient, Timer, play_sound
 from src.base_scene import Scene
 
 import json5
@@ -62,6 +62,17 @@ class Chart(Scene):
 
         self.show_result_screen = False
         self.quit = False
+        self.pause = False
+        self.restart = False
+
+        self.unpause_button = pg.transform.scale_by(pg.image.load("assets/continue.png").convert_alpha(), 0.75)
+        self.unpause_button_x = (WinWidth - self.unpause_button.get_width()) / 2
+        self.quit_button = pg.image.load("assets/quit.png").convert_alpha()
+        self.quit_button_x = self.unpause_button_x - self.quit_button.get_width() - 50
+        self.restart_button = pg.image.load("assets/restart.png").convert_alpha()
+        self.restart_button_x = self.unpause_button_x + self.unpause_button.get_width() + 50
+
+        self.pause_menu_selection = 1
 
         self.background = pg.image.load(bg_img).convert_alpha()
         sw, sh = WinWidth / self.background.get_width(), WinHeight / self.background.get_height()
@@ -69,10 +80,15 @@ class Chart(Scene):
 
         self.background = pg.transform.smoothscale_by(self.background, scale)
         self.background.set_alpha(Config._().BGDim)
+        self.black = pg.Surface((WinWidth, WinHeight))
+        self.black.fill((0, 0, 0))
 
         self.time = -2
 
     def update(self, dt: float):
+        if self.pause:
+            return
+
         self.timer.tick(dt)
         self.time += dt
 
@@ -132,9 +148,23 @@ class Chart(Scene):
         elif self.show_result_screen:
             sc.set_alpha(255)
 
+        if self.pause:
+            sc.blit(self.black, (0, 0))
+            sc.blit(self.unpause_button, (self.unpause_button_x, (WinHeight - self.unpause_button.get_height()) / 2))
+            restart_button_y = (WinHeight - self.restart_button.get_height()) / 2
+            sc.blit(self.restart_button, (self.restart_button_x, restart_button_y))
+            sc.blit(self.quit_button, (self.quit_button_x, (WinHeight - self.quit_button.get_height()) / 2))
+
+            xes = [self.restart_button_x, self.quit_button_x, self.unpause_button_x - 10]
+            box_x = xes[self.pause_menu_selection]
+            pg.draw.rect(sc, (255, 255, 255), (box_x, restart_button_y, *self.restart_button.get_size()), 5)
+
+            paused_text = render_text("Paused", 40, (255, 255, 255))
+            sc.blit(paused_text, ((WinWidth - paused_text.get_width()) / 2, restart_button_y - paused_text.get_height() - 50))
+
     def keydown(self, ev: pg.Event):
         switches = (self.config.KEY_Lane1, self.config.KEY_Lane2, self.config.KEY_Lane3)
-        if ev.key in switches:
+        if ev.key in switches and not self.pause:
             for i, switch in enumerate(switches):
                 if ev.key == switch:
                     old_held = self.curr_lane.lanes_held.copy()
@@ -144,9 +174,35 @@ class Chart(Scene):
                     self.curr_lane.lanes_held = old_held
 
         elif ev.key == pg.K_ESCAPE:
-            self.quit = True
+            self.pause = not self.pause
+            if self.pause:
+                self.black.set_alpha(125)
+                pg.mixer.music.pause()
+                self.pause_menu_selection = 2
+                Window.position = (pg.WINDOWPOS_CENTERED, pg.WINDOWPOS_CENTERED)
+            else:
+                self.black.set_alpha(0)
+                pg.mixer.music.unpause()
 
-        else:
+        elif ev.key == pg.K_r:
+            self.restart = True
+
+        elif self.pause and ev.key in (pg.K_LEFT, pg.K_RIGHT, pg.K_RETURN, pg.K_SPACE):
+            if ev.key in (pg.K_RETURN, pg.K_SPACE):
+                if self.pause_menu_selection == 1:
+                    self.quit = True
+                elif self.pause_menu_selection == 2:
+                    self.pause = False
+                    self.black.set_alpha(0)
+                    pg.mixer.music.unpause()
+                elif self.pause_menu_selection == 0:
+                    self.restart = True
+            else:
+                play_sound("assets/click.wav")
+                self.pause_menu_selection += (ev.key == pg.K_RIGHT) - (ev.key == pg.K_LEFT)
+                self.pause_menu_selection %= 3
+
+        elif not self.pause:
             self.curr_lane.keydown(ev)
 
     def keyup(self, ev: pg.Event):
