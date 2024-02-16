@@ -5,12 +5,13 @@ from src.chart import Chart, parse_chart
 from src.result_screen import ResultScreen
 from src.song_select import SongSelect
 from src.chart_load import ChartLoading
+from src.main_menu import MainMenu
 
 from src.config import Config
 from src.utils import Timer, render_text, gradient
 from src.user import User
 
-from src import note, chart, lane, result_screen, song_select
+from src import note, chart, lane, result_screen, song_select, main_menu
 
 class QuaTrythm(Scene):
     "The whole entire game in a class because why not"
@@ -21,6 +22,7 @@ class QuaTrythm(Scene):
         note.init()
         result_screen.init(self.sc)
         lane.init(self.sc)
+        main_menu.init(self.sc)
         song_select.init(self.sc, self.window)
 
         chart.init(self.sc, self.window)
@@ -31,7 +33,7 @@ class QuaTrythm(Scene):
         self.loaded_song_path: str = None
 
         self.current_scene: Scene = None
-        self.current_scene = SongSelect()
+        self.current_scene = MainMenu()
 
         self.timer = Timer()
         self.volume_gradient: pg.Surface = None
@@ -51,6 +53,10 @@ class QuaTrythm(Scene):
     def update(self, dt: float):
         self.timer.tick(dt)
         self.current_scene.update(dt)
+
+        if isinstance(self.current_scene, MainMenu):
+            if self.current_scene.done and not self.timer.have("fade"):
+                self.timer.set("fade", 1)
 
         if isinstance(self.current_scene, ChartLoading):
             if self.current_scene.cooldown is None:
@@ -100,6 +106,9 @@ class QuaTrythm(Scene):
 
         if self.timer.is_done("fade"):
             self.timer.delete("fade")
+            if isinstance(self.current_scene, MainMenu) and self.current_scene.done:
+                self.current_scene = SongSelect()
+                self.current_scene.update(dt)
 
     def draw(self, sc: pg.Surface):
         self.current_scene.draw(sc)

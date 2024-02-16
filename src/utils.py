@@ -18,9 +18,6 @@ def gradient(start_color, end_color, angle, size, flags = 0) -> pg.Surface:
     surf = pg.transform.smoothscale(surf, size)
     return surf
 
-def ease_sine(start, end, percentage) -> float:
-    return (-math.cos(math.pi * percentage) + 1) / 2 * (end - start) + start
-
 class Timer:
     def __init__(self):
         self.timers = {}
