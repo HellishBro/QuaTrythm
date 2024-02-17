@@ -3,4 +3,5 @@
 tests/
 src/user/
 /build_temp/
-/build/user
+/build/user/
+/build_temp/.*
