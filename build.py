@@ -3,9 +3,9 @@ import os
 
 from PyInstaller.__main__ import run
 
-def compile(name, source):
+def compile(name, source, **additional):
     print(f"Compiling {source} as {name}.exe")
-    run((
+    config = [
         "--log-level=ERROR",
         "--distpath=./build",
         "--workpath=./build_temp",
@@ -13,12 +13,18 @@ def compile(name, source):
         f"--name={name}",
         "--debug=imports",
         "--onefile",
-        "--windowed",
         source
-    ))
+    ]
+    for k, v in additional.items():
+        if v is True:
+            config.insert(-2, "--" + k.replace("_", "-"))
+        else:
+            config.insert(0, f"--{k.replace('_', '-')}={v}")
 
-compile("game", "src/__main__.py")
-compile("QuaTrythm_Launcher", "src/launcher.py")
+    run(config)
+
+compile("game", "src/__main__.py", windowed=True)
+compile("QuaTrythm_Launcher", "src/launcher.py", hide_console="minimize-early")
 
 if os.path.exists("build/charts/"):
     shutil.rmtree("build/charts/")
