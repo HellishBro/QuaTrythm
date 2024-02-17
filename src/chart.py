@@ -226,7 +226,7 @@ def parse_chart(file: str) -> Chart:
     bpm = json.get('bpm', 0)
 
     for i, lane in enumerate(json_lanes):
-        lanes.append(Lane([], i, 600))
+        lanes.append(Lane([], i, Config._().ScrollSpeed))
 
         for note in lane:
             cls = (TapNote, DragNote)[note[0]]

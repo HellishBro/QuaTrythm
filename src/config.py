@@ -9,7 +9,7 @@ def path(*path) -> Path:
     if getattr(sys, 'frozen', False):
         return Path(os.path.join(os.path.dirname(sys.executable), *path))
     else:
-        return Path(os.path.join(sys.argv[0], *path))
+        return Path(os.path.join(os.path.dirname(sys.argv[0]), *path))
 
 class Config:
     INSTANCE: 'Config' = None
@@ -24,6 +24,7 @@ class Config:
         self.KEY_Lane3 = pg.K_n
 
         self.NoteScale = 1
+        self.ScrollSpeed = 600
 
         self.VOLUME_Music = 1
         self.VOLUME_Sound = 1
@@ -47,8 +48,8 @@ class Config:
 
     @classmethod
     def load(cls):
-        if os.path.exists(path("user/", "config.json5")):
-            with open(path("user/", "config.json5")) as file:
+        if os.path.exists(path("./user/", "config.json5")):
+            with open(path("./user/", "config.json5")) as file:
                 json = json5.loads(file.read())
 
             for key, value in json.items():
@@ -62,5 +63,5 @@ class Config:
             if not (k.startswith('__') or callable(getattr(self, k))):
                 attrs[k] = v
 
-        with open(path("user/", "config.json5"), "w+") as file:
+        with open(path("./user/", "config.json5"), "w+") as file:
             file.write(json5.dumps(attrs))

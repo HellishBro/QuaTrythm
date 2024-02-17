@@ -11,7 +11,7 @@ else:
     print("Cannot find entry-point")
     print("If you are running in a dev environment, please check if __main__.py exists")
     print("If you are a consumer, please keep the game as game.exe")
-    exit(0xC0000005)
+    sys.exit(0xC0000005)
 
 error = 0xC0000005
 while error == 0xC0000005:
