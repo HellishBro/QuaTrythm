@@ -20,7 +20,7 @@ exe = EXE(
     a.scripts,
     a.binaries,
     a.datas,
-    [('v', None, 'OPTION')],
+    [],
     name='QuaTrythm_Launcher',
     debug=False,
     bootloader_ignore_signals=False,
@@ -34,5 +34,4 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    hide_console='minimize-early',
 )

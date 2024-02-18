@@ -6,12 +6,10 @@ from PyInstaller.__main__ import run
 def compile(name, source, **additional):
     print(f"Compiling {source} as {name}.exe")
     config = [
-        "--log-level=ERROR",
         "--distpath=./build",
         "--workpath=./build_temp",
         "--specpath=./build",
         f"--name={name}",
-        "--debug=imports",
         "--onefile",
         source
     ]
@@ -24,7 +22,7 @@ def compile(name, source, **additional):
     run(config)
 
 compile("game", "src/__main__.py", windowed=True)
-compile("QuaTrythm_Launcher", "src/launcher.py", hide_console="minimize-early")
+compile("QuaTrythm_Launcher", "src/launcher.py")
 
 if os.path.exists("build/charts/"):
     shutil.rmtree("build/charts/")

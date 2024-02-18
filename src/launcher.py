@@ -1,23 +1,28 @@
 import os
 import sys
-import subprocess
 from pathlib import Path
 
-if os.path.exists("__main__.py"):
-    args = [sys.executable, (Path(os.path.dirname(sys.argv[0])) / "__main__.py").as_posix()]
-elif os.path.exists("game.exe"):
-    args = ["game.exe"]
+def path(*path) -> Path:
+    if getattr(sys, 'frozen', False):
+        return Path(os.path.join(os.path.dirname(sys.executable), *path))
+    else:
+        return Path(os.path.join(os.path.dirname(sys.argv[0]), *path))
+
+if os.path.exists(path("__main__.py")):
+    args = [sys.executable, path("__main__.py").as_posix()]
+elif os.path.exists(path("game.exe")):
+    args = [path("game.exe").as_posix()]
 else:
     print("Cannot find entry-point")
     print("If you are running in a dev environment, please check if __main__.py exists")
     print("If you are a consumer, please keep the game as game.exe")
-    sys.exit(0xC0000005)
-
-error = 0xC0000005
-while error == 0xC0000005:
-    with subprocess.Popen(args) as subproc:
+    print("Press Ctrl-C to exit...")
+    while True:
         pass
 
-    error = subproc.returncode
-    if error == 0xC0000005:
-        print("Error 0xC0000005 returned. Restarting...")
+error = -1
+while error == -1:
+    error = os.system(' '.join(args))
+
+    if error == -1:
+        print("Error returned. Restarting...")

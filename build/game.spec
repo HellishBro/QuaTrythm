@@ -20,7 +20,7 @@ exe = EXE(
     a.scripts,
     a.binaries,
     a.datas,
-    [('v', None, 'OPTION')],
+    [],
     name='game',
     debug=False,
     bootloader_ignore_signals=False,
