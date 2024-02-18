@@ -38,7 +38,7 @@ class MainMenu(Scene):
         self.other_gradient.set_alpha(75)
 
         self.info_text = render_text(
-            "Made for Rhythm Jam 2024! Thanks to all the song artists for allowing me to use your song!",
+            "Made for Rhythm Jam 2024! Font: Montserrat. Thank you to all the song artists for allowing me to use your songs!",
             25, tuple(map(lambda n: n * 0.75,rand_color)), int(WinWidth / 4)
         )
 
