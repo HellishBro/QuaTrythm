@@ -141,6 +141,17 @@ class QuaTrythm(Scene):
                 sc.blit(bar, (25, 25 + volume_text.get_height() + 5))
 
     def keydown(self, ev: pg.Event):
+        if ev.key == pg.K_ESCAPE:
+            if isinstance(self.current_scene, MainMenu):
+                User._().save()
+                Config._().save()
+                sys.exit()
+            elif isinstance(self.current_scene, SongSelect):
+                pg.mixer.music.stop()
+                pg.mixer.music.unload()
+                self.current_scene = MainMenu()
+                self.current_scene.update(0)
+
         self.current_scene.keydown(ev)
 
     def keyup(self, ev: pg.Event):

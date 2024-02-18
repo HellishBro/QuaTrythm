@@ -148,10 +148,11 @@ class SongSelect(Scene):
 
             sc.blit(song_text, (25, offset + song_text.get_height() / 2))
 
-        banner_x, banner_y = WinWidth / 5 * 3, (WinHeight - self.song_banner.get_height()) / 5 * 2
-        banner_x += (abs(math.sin(math.pi * self.song_play_time * (self.current_song.bpm / 60))) - 1) * 50
+        bounce_offset = abs(math.sin(math.pi * self.song_play_time * (self.current_song.bpm / 60))) * 25
+        banner_x, banner_y = WinWidth / 5 * 3, (WinHeight - self.song_banner.get_height()) / 5 * 2 + bounce_offset
+        bounce_offset *= 2
 
-        Window.position = (DefaultWindowX - (abs(math.sin(math.pi * self.song_play_time * (self.current_song.bpm / 60))) - 1) * 50, DefaultWindowY)
+        Window.position = (DefaultWindowX - bounce_offset, DefaultWindowY)
 
         sc.blit(self.song_banner, (banner_x, banner_y))
 

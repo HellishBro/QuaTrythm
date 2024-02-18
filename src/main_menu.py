@@ -62,7 +62,7 @@ class MainMenu(Scene):
         sc.blit(self.info_text, (WinWidth - self.info_text.get_width() - 10, WinHeight - self.info_text.get_height() - 10))
 
     def keydown(self, ev: pg.Event):
-        if ev.key in (pg.K_SPACE, pg.K_RETURN):
+        if ev.key in (pg.K_SPACE, pg.K_RETURN) and not self.done:
             self.done = True
             pg.mixer.music.fadeout(1000)
             play_sound("assets/enter.wav")

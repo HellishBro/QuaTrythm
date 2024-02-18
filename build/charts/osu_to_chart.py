@@ -42,7 +42,7 @@ for item in hitobject_list:
         item = item.split(',')
         point = {
             'x': int(int(item[0]) // (512 / 4)),
-            'time': round((int(item[2]) / 1000) / (60 / bpm), 3),
+            'time': (int(item[2]) / 1000) / (60 / bpm),
             'switch_lane': bool(int(item[4]) & 8),
             'drag': bool(int(item[4]) & 2),
         }

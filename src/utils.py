@@ -14,7 +14,7 @@ def path(*path) -> Path:
         return Path(os.path.join(os.path.dirname(sys.argv[0]), *path))
 
 def render_text(text, size, color, warp_length = 0) -> pg.Surface:
-    return pg.font.Font(path("assets/roboto.ttf"), size).render(text, True, color, None, warp_length)
+    return pg.font.Font(path("assets/montserrat.ttf"), size).render(text, True, color, None, warp_length)
 
 def gradient(start_color, end_color, angle, size, flags = 0) -> pg.Surface:
     "Very expensive operation"
