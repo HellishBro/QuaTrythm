@@ -6,7 +6,6 @@ from config import Config
 
 import json5
 import random
-from pathlib import Path
 import math
 
 WinWidth, WinHeight = 0, 0
@@ -27,7 +26,7 @@ class MainMenu(Scene):
         with open(path("charts/", "charts.json5")) as f:
             charts = json5.loads(f.read())["charts"]
         random_chart = random.choice(charts)
-        self.song_text = render_text(f"Music : {random_chart['name']} - {random_chart['artist']}", 30, (255, 255, 255))
+        self.song_text = render_text(f"Music : {random_chart['name']} by {random_chart['artist']}", 30, (255, 255, 255))
         pg.mixer.music.load(path("charts/", random_chart["directory"], "song.mp3"))
         pg.mixer.music.play(-1)
         pg.mixer.music.set_volume(Config._().VOLUME_Music)

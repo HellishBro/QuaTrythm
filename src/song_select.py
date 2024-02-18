@@ -21,10 +21,11 @@ def init(sc: pg.Surface, window: pg.Window):
     DefaultWindowX, DefaultWindowY = Window.position
 
 class Song:
-    def __init__(self, name, directory, artist, charter, highlight, id):
+    def __init__(self, name, directory, artist, thumbnail_artist, charter, highlight, id):
         self.name = name
         self.directory = directory
         self.artist = artist
+        self.thumbnail_artist = thumbnail_artist
         self.charter = charter
         self.id = id
 
@@ -42,7 +43,7 @@ class Song:
 
     @classmethod
     def from_json(cls, json: dict):
-        return cls(json["name"], json["directory"], json["artist"], json["charter"], json["song_highlight"], json["id"])
+        return cls(json["name"], json["directory"], json["artist"], json["thumbnail_artist"], json["charter"], json["song_highlight"], json["id"])
 
 class SongSelect(Scene):
     def __init__(self):
@@ -88,7 +89,7 @@ class SongSelect(Scene):
             self.change_music = False
             self.song_banner = pg.image.load(self.current_song.background).convert_alpha()
 
-            sw, sh = (WinWidth / 2) / self.song_banner.get_width(), (WinHeight / 2) / self.song_banner.get_height()
+            sw, sh = (WinHeight / 2) / self.song_banner.get_width(), (WinHeight / 2) / self.song_banner.get_height()
             scale = min(sw, sh)
             song_banner = pg.transform.scale_by(self.song_banner, scale)
 
@@ -158,8 +159,10 @@ class SongSelect(Scene):
 
         charter_text = render_text("Charter: " + self.current_song.charter, 24, (255, 255, 255))
         sc.blit(charter_text, (banner_x, banner_y - charter_text.get_height() - 5))
-        artist_test = render_text("Artist: " + self.current_song.artist, 24, (255, 255, 255))
-        sc.blit(artist_test, (banner_x, banner_y - artist_test.get_height() - charter_text.get_height() - 10))
+        artist_text = render_text("Artist: " + self.current_song.artist, 24, (255, 255, 255))
+        sc.blit(artist_text, (banner_x, banner_y - artist_text.get_height() - charter_text.get_height() - 10))
+        thumbnail_artist_text = render_text("Thumbnail: " + self.current_song.thumbnail_artist, 24, (255, 255, 255))
+        sc.blit(thumbnail_artist_text, (banner_x, banner_y - thumbnail_artist_text.get_height() - artist_text.get_height() - charter_text.get_height() - 15))
 
         score_text = render_text(f"{self.current_song_score:07d}", 30, (255, 255, 255))
         sc.blit(score_text, (banner_x, banner_y + self.song_banner.get_height() + 5))

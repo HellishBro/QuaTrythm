@@ -4,6 +4,7 @@
       name: "Futile Resistance",
       directory: "Futile Resistance",
       artist: "Dokuson Amane",
+      thumbnail_artist: "Dokuson Amane",
       charter: "HellishBro",
       song_highlight: [36, 54],
       id: 0
@@ -12,9 +13,19 @@
       name: "Dimensions",
       directory: "Dimensions",
       artist: "Creo",
+      thumbnail_artist: "Creo",
       charter: "HellishBro",
       song_highlight: [50, 66.6],
       id: 1
+    },
+    {
+      name: "Science Blaster",
+      directory: "Science Blaster",
+      artist: "Spelling Phailer",
+      thumbnail_artist: "r/comradekilldozer",
+      charter: "HellishBro",
+      song_highlight: [43, 64],
+      id: 2
     }
   ]
 }
