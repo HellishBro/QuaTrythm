@@ -47,6 +47,8 @@ class Chart(Scene):
         self.combo_text = render_text("COMBO", 24, (255, 255, 255))
         self.combo_text_size = 50
 
+        self.miss_text = render_text("Miss!", 60, (255, 255, 255))
+
         pg.mixer.music.load(song)
         pg.mixer.music.set_volume(Config._().VOLUME_Music)
         self.song_started = False
@@ -85,6 +87,8 @@ class Chart(Scene):
 
         self.time = -2
 
+        self.shake_position = (0, 0)
+
     def update(self, dt: float):
         if self.pause:
             return
@@ -102,9 +106,9 @@ class Chart(Scene):
             self.combo_text_size = 50
 
         if not self.timer.is_done("shake_time"):
-            Window.position = (Window.position[0] + random.randint(-1, 1), Window.position[1] + random.randint(-1, 1))
+            self.shake_position = (random.randint(-5, 5), random.randint(-5, 5))
         elif self.timer.is_done("shake_time"):
-            Window.position = (pg.WINDOWPOS_CENTERED, pg.WINDOWPOS_CENTERED)
+            self.shake_position = (0, 0)
             self.timer.delete("shake_time")
 
         self.score = int(1_000_000 * (self.notes_hit / self.note_count))
@@ -120,6 +124,10 @@ class Chart(Scene):
         offset = (self.curr_lane.x - 1) * (self.curr_lane.width / 2) + (WinWidth - self.curr_lane.width) / 2
         for i in range(4):
             sc.blit((self.notes_even_bg, self.notes_odd_bg)[i % 2], (offset + i * self.curr_lane.width / 4, 0))
+
+        if self.timer.have("shake_time") and not self.timer.is_done("shake_time"):
+            sc.blit(self.miss_text, ((WinWidth - self.miss_text.get_width()) / 2, self.curr_lane.hit_y - self.miss_text.get_height() - 100))
+
         pg.draw.line(sc, (255, 255, 255), (0, self.curr_lane.hit_y), (WinWidth, self.curr_lane.hit_y), 5)
         pg.draw.line(sc, (0, 255, 255), (0, self.curr_lane.hit_y), (self.time / self.total_time * WinWidth, self.curr_lane.hit_y), 5)
 
@@ -161,6 +169,9 @@ class Chart(Scene):
 
             paused_text = render_text("Paused", 40, (255, 255, 255))
             sc.blit(paused_text, ((WinWidth - paused_text.get_width()) / 2, restart_button_y - paused_text.get_height() - 50))
+
+        if self.shake_position != (0, 0):
+            sc.blit(sc, self.shake_position)
 
     def keydown(self, ev: pg.Event):
         switches = (self.config.KEY_Lane1, self.config.KEY_Lane2, self.config.KEY_Lane3)
