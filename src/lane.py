@@ -63,10 +63,10 @@ class Lane(Scene):
     def update_closest_notes(self):
         self.closest_notes: list[tuple[int, Note] | None] = [(None, None)] * 4
         for i, note in enumerate(self.notes):
-            if self.closest_notes[note.x][0] is None:
+            if self.closest_notes[note.x][0] is None and note.time >= BAD_TIMING:
                 self.closest_notes[note.x] = (i, note)
             else:
-                if note.time <= self.closest_notes[note.x][1].time:
+                if self.closest_notes[note.x][1] is not None and self.closest_notes[note.x][1].time >= note.time >= BAD_TIMING:
                     self.closest_notes[note.x] = (i, note)
 
     def remove_closest_notes(self, note: Note):
@@ -104,11 +104,11 @@ class Lane(Scene):
                 elif time_offset <= BAD_TIMING:
                     self.chart.combo = 0
                     self.chart.accuracy_offsets.append(note.y / self.speed)
-                    self.chart.timer.set("shake_time", 0.25)
                     self.lanes_pressed.remove(note.x)
                     self.notes.remove(note)
                     self.remove_closest_notes(note)
                     self.chart.bads += 1
+                    self.chart.timer.set('miss', 0.25)
                     if note.y > 0: self.chart.early += 1
                     else: self.chart.late += 1
                     self.update_closest_notes()
@@ -140,10 +140,10 @@ class Lane(Scene):
 
             elif (note.y / self.speed) < -BAD_TIMING:
                 self.chart.combo = 0
-                self.chart.timer.set("shake_time", 0.25)
                 self.chart.misses += 1
                 self.notes.remove(note)
                 self.update_closest_notes()
+                self.chart.timer.set('miss', 0.25)
 
         for press_effect in self.note_press_effects:
             if press_effect[2] >= 0.5:

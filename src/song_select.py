@@ -21,7 +21,7 @@ def init(sc: pg.Surface, window: pg.Window):
     DefaultWindowX, DefaultWindowY = Window.position
 
 class Song:
-    def __init__(self, name, directory, artist, thumbnail_artist, charter, highlight, id):
+    def __init__(self, name, directory, artist, thumbnail_artist, charter, highlight, id, index):
         self.name = name
         self.directory = directory
         self.artist = artist
@@ -41,9 +41,11 @@ class Song:
         self.difficulty = chart_info["difficulty"]
         self.bpm = chart_info["bpm"]
 
+        self.index = index
+
     @classmethod
-    def from_json(cls, json: dict):
-        return cls(json["name"], json["directory"], json["artist"], json["thumbnail_artist"], json["charter"], json["song_highlight"], json["id"])
+    def from_json(cls, json: dict, index):
+        return cls(json["name"], json["directory"], json["artist"], json["thumbnail_artist"], json["charter"], json["song_highlight"], json["id"], index)
 
 class SongSelect(Scene):
     def __init__(self):
@@ -51,8 +53,8 @@ class SongSelect(Scene):
             data = json5.loads(f.read())
 
         self.songs: list[Song] = []
-        for chart in data["charts"]:
-            self.songs.append(Song.from_json(chart))
+        for i, chart in enumerate(data["charts"]):
+            self.songs.append(Song.from_json(chart, i))
 
         self.selected_chart = 0
         self.song_list_height = 100

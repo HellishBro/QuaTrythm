@@ -46,18 +46,18 @@ class User:
     def save(self):
         if not os.path.exists(path("user")):
             os.mkdir(path("user"))
-        with open(path("user/", "save.json5"), "w+") as f:
-            f.write(base64.b64encode(gzip.compress(json5.dumps(self.json).encode())).decode())
+        with open(path("user/", "user.sav"), "wb+") as f:
+            f.write(gzip.compress(json5.dumps(self.json).encode()))
 
     @classmethod
     def load(cls):
-        if not os.path.exists(path("user/", "save.json5")):
+        if not os.path.exists(path("user/", "user.sav")):
             User.INSTANCE = User()
 
         else:
             clazz = User()
-            with open(path("user/", "save.json5")) as f:
-                data = json5.loads(gzip.decompress(base64.b64decode(f.read().encode())).decode())
+            with open(path("user/", "user.sav"), 'rb') as f:
+                data = json5.loads(gzip.decompress(f.read()).decode())
 
             clears: dict = data["clears"]
             for id, score in clears.items():

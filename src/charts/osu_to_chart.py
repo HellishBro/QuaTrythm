@@ -1,6 +1,7 @@
 import json5
 import zipfile
 import os
+import math
 
 osz = input("OSZ file: ")
 with zipfile.ZipFile(osz) as zf:
@@ -40,12 +41,23 @@ for item in metadata_list:
 for item in hitobject_list:
     if ',' in item:
         item = item.split(',')
-        point = {
-            'x': int(int(item[0]) // (512 / 4)),
-            'time': (int(item[2]) / 1000) / (60 / bpm),
-            'switch_lane': bool(int(item[4]) & 8),
-            'drag': bool(int(item[4]) & 2),
-        }
+        x = int(int(item[0]) * 5 / 512)
+        time = (int(item[2]) / 1000) / (60 / bpm)
+        if x < 4:
+            point = {
+                'type': 'note',
+                'x': x,
+                'time': time,
+                'switch_lane': bool(int(item[4]) & 8),
+                'drag': bool(int(item[4]) & 2),
+            }
+        else:
+            point = {
+                'type': 'event',
+                'time': time,
+                'event_type': 0,
+                'params': []
+            }
 
         out['hitobjects'].append(point)
 
@@ -55,14 +67,20 @@ difficulty = input("Difficulty: ")
 lanes = [[], [], []]
 curr_lane = 0
 
-for note in out['hitobjects']:
-    if note['switch_lane']:
-        curr_lane = int(input("Which lane to switch to: "))
+events = []
 
-    lanes[curr_lane].append([int(note['drag']), note['x'], note['time']])
+for note in out['hitobjects']:
+    if note['type'] == 'note':
+        if note['switch_lane']:
+            curr_lane = int(input("Which lane to switch to: "))
+
+        lanes[curr_lane].append([int(note['drag']), note['x'], note['time']])
+    elif note['type'] == 'event':
+        events.append([note['time'], note['event_type'], note['params']])
 
 output = {
     "lanes": lanes,
+    "events": events,
     "name": input("Chart Name: "),
     "difficulty": difficulty,
     "bpm": bpm

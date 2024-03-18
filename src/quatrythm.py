@@ -1,7 +1,7 @@
 import pygame as pg
 
 from base_scene import Scene
-from chart import Chart, parse_chart
+from chart import Chart
 from result_screen import ResultScreen
 from song_select import SongSelect
 from chart_load import ChartLoading
@@ -17,6 +17,7 @@ import lane
 import result_screen
 import song_select
 import main_menu
+import event
 import sys
 
 
@@ -31,6 +32,7 @@ class QuaTrythm(Scene):
         lane.init(self.sc)
         main_menu.init(self.sc)
         song_select.init(self.sc, self.window)
+        event.init(self.sc, self.window)
 
         chart.init(self.sc, self.window)
 
@@ -38,6 +40,7 @@ class QuaTrythm(Scene):
         self.chart_loaded = False
         self.loaded_song_id = 0
         self.loaded_song_path: str = None
+        self.loaded_song_index = 0
 
         self.current_scene: Scene = None
         self.current_scene = MainMenu()
@@ -92,11 +95,14 @@ class QuaTrythm(Scene):
                 self.current_scene.begin_load_chart = False
                 self.loaded_song_id = self.current_scene.current_song.id
                 self.loaded_song_path = self.current_scene.current_song.chart_path
+                self.loaded_song_index = self.current_scene.current_song.index
                 self.load_chart(self.current_scene)
 
         if isinstance(self.current_scene, ResultScreen):
             if self.current_scene.done:
                 self.current_scene = SongSelect()
+                self.current_scene.selected_chart = self.loaded_song_index
+                self.current_scene.change_music = True
                 self.current_scene.update(dt)
 
         if self.timer.have("quit") and self.timer.is_done("quit"):

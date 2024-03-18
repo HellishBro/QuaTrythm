@@ -3,6 +3,7 @@ import pygame as pg
 from lane import Lane
 from config import Config
 from note import TapNote, DragNote
+from event import Event, ALL_EVENTS
 from utils import render_text, gradient, Timer, play_sound, path
 from base_scene import Scene
 
@@ -21,7 +22,7 @@ def init(sc: pg.Surface, window: pg.Window):
     Window = window
 
 class Chart(Scene):
-    def __init__(self, lanes: list[Lane], song: str, name: str, difficulty: str, bg_img: str):
+    def __init__(self, lanes: list[Lane], song: str, name: str, difficulty: str, bg_img: str, events: list[Event]):
         self.lanes = lanes
         for lane in self.lanes:
             lane.chart = self
@@ -87,7 +88,18 @@ class Chart(Scene):
 
         self.time = -2
 
+        # rendering variables
         self.shake_position = (0, 0)
+        self.rotation = 0
+        self.scale = 1
+        self.translate = (0, 0)
+
+        # events
+        self.events = events
+        for event in self.events:
+            event.chart = self
+            event.time += 2
+            event.chart_loaded()
 
     def update(self, dt: float):
         if self.pause:
@@ -98,6 +110,9 @@ class Chart(Scene):
 
         for lane in self.lanes:
             lane.update(dt)
+
+        for event in self.events:
+            event.update(dt)
 
         self.max_combo = max(self.max_combo, self.combo)
         if self.combo_text_size > 50:
@@ -122,10 +137,11 @@ class Chart(Scene):
         sc.blit(self.background, ((WinWidth - self.background.get_width()) / 2, (WinHeight - self.background.get_height()) / 2))
 
         offset = (self.curr_lane.x - 1) * (self.curr_lane.width / 2) + (WinWidth - self.curr_lane.width) / 2
+
         for i in range(4):
             sc.blit((self.notes_even_bg, self.notes_odd_bg)[i % 2], (offset + i * self.curr_lane.width / 4, 0))
 
-        if self.timer.have("shake_time") and not self.timer.is_done("shake_time"):
+        if self.timer.have("miss") and not self.timer.is_done("miss"):
             sc.blit(self.miss_text, ((WinWidth - self.miss_text.get_width()) / 2, self.curr_lane.hit_y - self.miss_text.get_height() - 100))
 
         pg.draw.line(sc, (255, 255, 255), (0, self.curr_lane.hit_y), (WinWidth, self.curr_lane.hit_y), 5)
@@ -173,6 +189,26 @@ class Chart(Scene):
         if self.shake_position != (0, 0):
             sc.blit(sc, self.shake_position)
 
+        for event in self.events:
+            if event.time <= 0:
+                event.trigger(sc)
+
+        # final steps
+        if (
+            self.rotation or
+            self.scale or
+            self.translate
+        ):
+            if self.rotation and self.scale:
+                new_surf = pg.transform.rotozoom(sc, self.rotation, self.scale)
+            elif self.rotation:
+                new_surf = pg.transform.rotate(sc, self.rotation)
+            elif self.scale:
+                new_surf = pg.transform.scale_by(sc, self.scale)
+
+            sc.fill((0, 0, 0))
+            sc.blit(new_surf, ((WinWidth - new_surf.get_width()) / 2 + self.translate[0], (WinHeight - new_surf.get_height()) / 2 + self.translate[1]))
+
     def keydown(self, ev: pg.Event):
         switches = (self.config.KEY_Lane1, self.config.KEY_Lane2, self.config.KEY_Lane3)
         if ev.key in switches and not self.pause:
@@ -190,7 +226,6 @@ class Chart(Scene):
                 self.black.set_alpha(125)
                 pg.mixer.music.pause()
                 self.pause_menu_selection = 2
-                Window.position = (pg.WINDOWPOS_CENTERED, pg.WINDOWPOS_CENTERED)
             else:
                 self.black.set_alpha(0)
                 pg.mixer.music.unpause()
@@ -228,25 +263,36 @@ class Chart(Scene):
     def curr_lane(self, new: int):
         self.active_lane = new
 
+NOTES = (TapNote, DragNote)
+
 def parse_chart(file: str) -> Chart:
     with open(file) as f:
         json = json5.loads(f.read())
 
     json_lanes = json.get('lanes')
-    lanes = []
+    json_events = json.get('events', [])
+    parsed_lanes = []
+    events = []
+
     bpm = json.get('bpm', 0)
 
     for i, lane in enumerate(json_lanes):
-        lanes.append(Lane([], i, Config._().ScrollSpeed))
+        parsed_lanes.append([])
 
         for note in lane:
-            cls = (TapNote, DragNote)[note[0]]
+            cls = NOTES[note[0]]
             x = note[1]
             time = 60 / bpm * note[2]
 
-            lanes[-1].notes.append(cls(x, time))
+            parsed_lanes[-1].append(cls(x, time))
 
-        lanes[-1].update_notes()
+    lanes = [Lane(n, x, Config._().ScrollSpeed) for x, n in enumerate(parsed_lanes)]
+
+    for event in json_events:
+        cls = ALL_EVENTS[event[1]]
+        time = event[0]
+        params = event[2]
+        events.append(cls(time, *params))
 
     directory_path = Path(os.path.dirname(file))
-    return Chart(lanes, directory_path / "song.mp3" , json.get('name'), json.get('difficulty'), directory_path / "thumbnail.jpg")
+    return Chart(lanes, directory_path / "song.mp3" , json.get('name'), json.get('difficulty'), directory_path / "thumbnail.jpg", events)
